@@ -10,3 +10,6 @@ cw say hello
 szy test
 szy bye
 szy say hello
+cw come
+cw see
+cw conquer
