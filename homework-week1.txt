@@ -7,3 +7,6 @@ hjm say hello
 cw test
 cw bye
 cw say hello
+szy test
+szy bye
+szy say hello
