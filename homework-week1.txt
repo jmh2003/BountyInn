@@ -4,3 +4,6 @@ qbl say hello
 hjm test
 hjm bye
 hjm say hello
+cw test
+cw bye
+cw say hello
