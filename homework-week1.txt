@@ -1,3 +1,6 @@
 qbl test
 qbl bye
 qbl say hello
+hjm test
+hjm bye
+hjm say hello
