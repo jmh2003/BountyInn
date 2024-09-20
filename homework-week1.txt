@@ -10,3 +10,7 @@ cw say hello
 szy test
 szy bye
 szy say hello
+
+qbl part 2
+qbl part 2
+qbl part 2
