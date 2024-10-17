@@ -1,19 +1,21 @@
 from django.db import models
 from users.models import User
 
-class Task(models.Model):
-    TASK_STATUS_CHOICES = [
-        ('awaiting', 'Awaiting'),
-        ('ongoing', 'Ongoing'),
-        ('finished', 'Finished'),
-        ('aborted', 'Aborted'),
-    ]
+TASK_STATUS_CHOICES = [
+    ('awaiting', 'Awaiting'),
+    ('ongoing', 'Ongoing'),
+    ('finished', 'Finished'),
+    ('aborted', 'Aborted'),
+]
 
-    TASK_TAG_CHOICES = [
-        ('Learning', 'Learning'),
-        ('Life', 'Life'),
-        ('Job', 'Job'),
-    ]
+TASK_TAG_CHOICES = [
+    ('Learning', 'Learning'),
+    ('Life', 'Life'),
+    ('Job', 'Job'),
+]
+
+class Task(models.Model):
+
 
     task_id = models.AutoField(primary_key=True)
     task_tag = models.CharField(max_length=20, choices=TASK_TAG_CHOICES)

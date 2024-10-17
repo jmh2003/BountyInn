@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Task</title>
+</head>
+<body>
+    <h2>Add Task</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="task_tag">Task Tag:</label>
+        <select id="task_tag" name="task_tag">
+            <option value="learning">Learning</option>
+            <option value="life">Life</option>
+            <option value="job">Job</option>
+        </select><br>
+        <label for="task_title">Task Title:</label>
+        <input type="text" id="task_title" name="task_title" required><br>
+        <label for="task_description">Task Description:</label>
+        <textarea id="task_description" name="task_description" required></textarea><br>
+        <label for="creator_id">Creator ID:</label>
+        <input type="text" id="creator_id" name="creator_id" required><br>
+        <label for="reward_points">Reward Points:</label>
+        <input type="number" id="reward_points" name="reward_points" required><br>
+        <label for="deadline">Deadline:</label>
+        <input type="datetime-local" id="deadline" name="deadline" required><br>
+        <button type="submit">Add Task</button>
+    </form>
+</body>
+</html>
