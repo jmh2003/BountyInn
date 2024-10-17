@@ -3,8 +3,8 @@ from django.shortcuts import render
 # Create your views here.
 # users/views.py
 from django.shortcuts import render
-from .models import User
-from models import Score
+from .models import User,Score
+
 
 # 按用户ID排序的排行榜视图函数
 def leaderboard_by_id(request):

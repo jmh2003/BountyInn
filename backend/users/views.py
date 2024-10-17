@@ -37,7 +37,7 @@ def user_register(nickname, password, user_introduction):
     if User.objects.filter(nickname=nickname).exists():
         return False
     password_hash = make_password(password)
-    user = User(nickname=nickname, password_hash=password_hash, user_introduction=user_introduction, credit_score=10, remaining_points=50, ability_score=10)
+    user = User(nickname=nickname, password_hash=password_hash, user_introduction=user_introduction, credit_score=10, remaining_points=50, ability_score=10,is_alive=True)
     user.save()
     return True
 
@@ -64,6 +64,9 @@ def login(request):
 def user_login(nick_name, password):
     try:
         user = User.objects.get(nickname=nick_name)
+        #用户已经注销，无法继续登录
+        if user.is_alive == False:
+            return None
         if check_password(password, user.password_hash):
             return user.user_id
         else:
@@ -121,16 +124,44 @@ def update_user(request):
 
 
 
-def find_user_by_id(user_id):
-    #根据用户的id值，查找用户的信息
-    # 返回user实体 User(nickname=nickname, password_...)
-    pass
+# def find_user_by_id(user_id):
+#     #根据用户的id值，查找用户的信息
+#     # 返回user实体 User(nickname=nickname, password_...)
+#     pass
 
-#这个需要提前确认好，输入用户的密码等，进行删除操作，重复确认
+
+def find_user_by_id(user_id):
+    try:
+        user = User.objects.get(user_id=user_id)
+        # user_data = {
+        #     'user_id': user.user_id,
+        #     'nickname': user.nickname,
+        #     'user_introduction': user.user_introduction,
+        #     'credit_score': user.credit_score,
+        #     'remaining_points': user.remaining_points,
+        #     'ability_score': user.ability_score
+        # }
+        # return JsonResponse({'user': user_data})
+        return user
+    except User.DoesNotExist:
+        return None
+        # return JsonResponse({'error': 'User not found'}, status=404)
+
+# #这个需要提前确认好，输入用户的密码等，进行删除操作，重复确认
+# def delete_user(user_id):
+#     #根据用户的id值，删除用户的信息
+#     #返回值是True或者False
+#     pass
+
 def delete_user(user_id):
-    #根据用户的id值，删除用户的信息
-    #返回值是True或者False
-    pass
+    try:
+        user = User.objects.get(user_id=user_id)
+        user.is_alive = False #更改key值，表示用户已经注销
+        return True
+    except User.DoesNotExist:
+        return False
+#直接注销用户，删除用户信息
+
 
 
 # def logout(request):

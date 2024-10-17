@@ -9,7 +9,7 @@ class User(models.Model):
     credit_score = models.IntegerField(default=0)
     remaining_points = models.IntegerField(default=0)
     ability_score = models.IntegerField(default=0)
-
+    is_alive = models.BooleanField(default=True)
     def __str__(self):
         return self.nickname
     
