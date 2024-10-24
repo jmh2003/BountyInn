@@ -1,0 +1,5 @@
+input::placeholder {
+    color: white; /* 设置占位符的颜色为白色 */
+    opacity: 0.4; /* 确保颜色不透明 */
+  }
+  
