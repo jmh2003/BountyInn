@@ -1,30 +1,41 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
 import TaskList from './components/TaskList';
 import HomePage from './components/HomePage';
 import PublishTask from './components/PublishTask';
 import Rankings from './components/Rankings';
 import Profile from './components/Profile';
+import ReceiveTask from './components/ReceiveTask';
+import Login from './components/Login';
+import Register from './components/Register';
+import ManageTasks from './components/ManageTask';
 import './App.css';
 
-
-
 function App() {
+
+  return (
+    <div className="App">
+      <Routes>
+        <Route path="/tasks" element={<TaskList />} />
+        <Route path="/publish" element={<PublishTask />} />
+        <Route path="/rankings" element={<Rankings />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/homepage" element={<HomePage />} />
+        <Route path='/receive' element={<ReceiveTask />} />
+        <Route path='/register' element={<Register />} />
+        <Route path='/manage' element={<ManageTasks />} />
+        <Route path='/' element={<Login />} />
+      </Routes>
+    </div>
+  );
+}
+
+function AppWrapper() {
   return (
     <Router>
-      <div className="App">
-        <Header />
-        <Routes>
-          <Route path="/tasks" element={<TaskList />} />
-          <Route path="/publish" element={<PublishTask />} />
-          <Route path="/rankings" element={<Rankings />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/" element={<HomePage />} />
-        </Routes>
-      </div>
+      <App />
     </Router>
   );
 }
 
-export default App;
+export default AppWrapper;

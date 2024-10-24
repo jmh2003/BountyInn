@@ -15,14 +15,12 @@ TASK_TAG_CHOICES = [
 ]
 
 class Task(models.Model):
-
-
     task_id = models.AutoField(primary_key=True)
     task_tag = models.CharField(max_length=20, choices=TASK_TAG_CHOICES)
     task_title = models.CharField(max_length=200)
     task_description = models.TextField()
-    creator_id = models.ForeignKey(User, related_name='created_tasks', on_delete=models.CASCADE)
-    assignee_id = models.ForeignKey(User, related_name='assigned_tasks', on_delete=models.SET_NULL, null=True, blank=True)
+    creator_id = models.ForeignKey(User, related_name='created_tasks', on_delete=models.CASCADE,to_field="user_id")  # 关联用户
+    assignee_id = models.ForeignKey(User, related_name='assigned_tasks', on_delete=models.SET_NULL, null=True, blank=True)  # 可选的完成者
     task_status = models.CharField(max_length=20, choices=TASK_STATUS_CHOICES, default='awaiting')
     reward_points = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -31,4 +29,3 @@ class Task(models.Model):
 
     def __str__(self):
         return self.task_title
-    

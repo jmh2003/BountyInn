@@ -4,34 +4,29 @@ from django.http import JsonResponse
 from .models import Task
 from users.models import User
 from django.utils.timezone import now
+from django.contrib.auth.decorators import login_required
 import json
 def index(request):
     return HttpResponse("Hello, world. You're at the tasks index.")
-
-import json
 
 
 def add_task(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            print(data)  # 打印接收到的数据
+            nickname = data.get('username')  # 从请求数据中获取nickname
+            creator = User.objects.filter(nickname=nickname).first()
+            if creator is None:
+                return JsonResponse({'error': 'User not found'}, status=404)
 
-            task_tag = data.get('task_tag')
-            task_title = data.get('task_title')
-            task_description = data.get('task_description')
-            creator_id = data.get('creator_id')  # 使用输入的 ID
-            reward_points = data.get('reward_points')
-            deadline = data.get('deadline')
-
-            # 直接调用任务添加函数
+            # 创建任务
             task = Task(
-                task_tag=task_tag,
-                task_title=task_title,
-                task_description=task_description,
-                creator_id_id=creator_id,  # 直接使用输入的 ID
-                reward_points=reward_points,
-                deadline=deadline,
+                task_tag=data.get('task_tag'),
+                task_title=data.get('task_title'),
+                task_description=data.get('task_description'),
+                creator_id=creator,  # 使用 User 对象
+                reward_points=data.get('reward_points'),
+                deadline=data.get('deadline'),
                 task_status='awaiting',
                 is_reviewed=False
             )
@@ -44,28 +39,41 @@ def add_task(request):
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
-def user_add_task(curr_id, task_tag, task_title, task_description, reward_points, deadline):
-    try:
-        # 假设这里有逻辑来根据curr_id查找用户
-        creator = User.objects.get(user_id=curr_id)
-        task = Task(
-            task_tag=task_tag,
-            task_title=task_title,
-            task_description=task_description,
-            creator_id=creator,  # 使用User对象而非user_id
-            reward_points=reward_points,
-            deadline=deadline,
-            assignee_id=None,
-            task_status='awaiting',
-            created_at=now(),
-            is_reviewed=False
-        )
-        task.save()
-        return True
-    except User.DoesNotExist:
-        return False
+# def user_add_task(curr_id, task_tag, task_title, task_description, reward_points, deadline):
+#     try:
+#         # 假设这里有逻辑来根据curr_id查找用户
+#         creator = User.objects.get(user_id=curr_id)
+#         task = Task(
+#             task_tag=task_tag,
+#             task_title=task_title,
+#             task_description=task_description,
+#             creator=creator,  # 使用User对象而非user_id
+#             reward_points=reward_points,
+#             deadline=deadline,
+#             assignee_id=None,
+#             task_status='awaiting',
+#             created_at=now(),
+#             is_reviewed=False
+#         )
+#         task.save()
+#         return True
+#     except User.DoesNotExist:
+#         return False
+def get_user_tasks(request):
+        username = request.GET.get('username')  # 从请求参数中获取 username
+        try:
+            user = User.objects.filter(nickname=username).first()  # 根据 username 查询 User
+            if user is None:
+                return JsonResponse({'error': 'User not found'}, status=404)
 
-
+            tasks = Task.objects.filter(creator_id=user.user_id).values(
+                'task_id', 'task_tag', 'task_title', 'task_description',
+                'task_status', 'reward_points', 'deadline'
+            )
+            task_list = list(tasks)
+            return JsonResponse(task_list, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
 
 #需要确认当前任务是否归属于当前用户
