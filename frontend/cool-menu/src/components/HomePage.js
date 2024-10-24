@@ -1,5 +1,7 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+import Header from './Header';
 
 const HomePageContainer = styled.div`
   padding: 20px 50px 30px;
@@ -18,6 +20,10 @@ const Task = styled.div`
 `;
 
 const HomePage = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const username = queryParams.get('username');
+
   const tasks = [
     { id: 1, title: '任务1', description: '任务描述1' },
     { id: 2, title: '任务2', description: '任务描述2' },
@@ -50,14 +56,18 @@ const HomePage = () => {
   };
 
   return (
-    <HomePageContainer>
-      {tasks.map(task => (
-        <Task key={task.id} bgColor={getRandomColor()}> {/* 传入随机颜色 */}
-          <h3>{task.title}</h3>
-          <p>{task.description}</p>
-        </Task>
-      ))}
-    </HomePageContainer>
+    <div>
+      <Header username={username} />{}
+      <HomePageContainer>
+        {tasks.map(task => (
+          <Task key={task.id} bgColor={getRandomColor()}> {/* 传入随机颜色 */}
+            <h3>{task.title}</h3>
+            <p>{task.description}</p>
+          </Task>
+        ))}
+      </HomePageContainer>
+    </div>
+
   );
 };
 

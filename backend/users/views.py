@@ -1,4 +1,6 @@
 from .models import User
+import logging
+import json
 # users/views.py
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
@@ -9,31 +11,30 @@ from django.views.decorators.http import require_http_methods
 
 
 def register(request):
-    if request.method == 'POST':
-        nickname = request.POST.get('nickname')
-        password = request.POST.get('password')
-        user_introduction = request.POST.get('user_introduction', '')
+    data = json.loads(request.body)
+    nickname = data.get('username')
+    password = data.get('password')
 
-        # # 检查昵称是否已被使用
-        # if User.objects.filter(nickname=nickname).exists():
-        #     return JsonResponse({'error': 'Nickname already taken'}, status=400)
+    # # 检查昵称是否已被使用
+    # if User.objects.filter(nickname=nickname).exists():
+    #     return JsonResponse({'error': 'Nickname already taken'}, status=400)
 
-        # # 创建用户并保存到数据库
-        # password_hash = make_password(password)
-        # user = User(nickname=nickname, password_hash=password_hash, user_introduction=user_introduction, credit_score=10, remaining_points=50, ability_score=10)
-        # user.save()
-        is_register = user_register(nickname, password, user_introduction)
-        if is_register == False:
-            return JsonResponse({'error': 'Nickname already taken'}, status=400)
+    # # 创建用户并保存到数据库
+    # password_hash = make_password(password)
+    # user = User(nickname=nickname, password_hash=password_hash, user_introduction=user_introduction, credit_score=10, remaining_points=50, ability_score=10)
+    # user.save()
+    is_register = user_register(nickname, password)
+    if is_register == False:
+        print(1)
+        return JsonResponse({'error': 'Nickname already taken'}, status=400)
 
-        return JsonResponse({'message': 'User registered successfully'})
-
-    return render(request, 'users/register.html')
+    return JsonResponse({'message': 'User registered successfully'})
 
 
 #查看是否成功注册，注册成功返回true，否则返回false
-def user_register(nickname, password, user_introduction):
+def user_register(nickname, password):
     #注意检查，当前用户的昵称是否已被使用
+    user_introduction = ''
     if User.objects.filter(nickname=nickname).exists():
         return False
     password_hash = make_password(password)
@@ -42,23 +43,22 @@ def user_register(nickname, password, user_introduction):
     return True
 
 
+logger = logging.getLogger(__name__)
 
 def login(request):
-    if request.method == 'POST':
-        nickname = request.POST.get('nickname')
-        password = request.POST.get('password')
+    data = json.loads(request.body)
+    nickname = data.get('username')
+    password = data.get('password')
 
-        try:
-            user_id = user_login(nickname, password)
-            if user_id:
-                return JsonResponse({'message': 'Login successful'})    
-            else:
-                return JsonResponse({'error': 'Invalid password'}, status=400)
-            
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'User not found'}, status=404)
-
-    return render(request, 'users/login.html')
+    try:
+        user_id = user_login(nickname, password)
+        if user_id:
+            return JsonResponse({'message': 'Login successful'})    
+        else:
+            return JsonResponse({'error': 'Invalid password'}, status=400)
+        
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
 
 # 用户登录函数，检查用户昵称和密码是否匹配，登录成功就返回用户ID，否则返回None
 def user_login(nick_name, password):

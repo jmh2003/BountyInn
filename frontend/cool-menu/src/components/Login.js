@@ -6,8 +6,9 @@ import { useNavigate } from 'react-router-dom';
 const styles = {
     loginContainer: {
       maxWidth: '400px',
-      margin: 'auto',
-      padding: '20px',
+      maxHeight: '250px',
+      margin: '150px auto',
+      padding: '30px 50px 100px',
       borderRadius: '8px',
       boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
       backgroundColor: '#f9f9f9',
@@ -35,6 +36,7 @@ const styles = {
     },
     loginButton: {
       width: '100%',
+      textAlign: 'center',
       padding: '10px',
       border: 'none',
       borderRadius: '4px',
@@ -46,6 +48,13 @@ const styles = {
     },
     loginButtonHover: {
       backgroundColor: '#0056b3',
+    },
+    registerLink: {
+      display: 'block',
+      textAlign: 'right',
+      marginTop: '15px',
+      color: '#007bff',
+      cursor: 'pointer',
     },
   };
 
@@ -62,7 +71,7 @@ function Login() {
         password: password
       });
       console.log(response.data);
-      navigate('/homepage'); // 登录成功后跳转到 /homepage
+      navigate(`/homepage?username=${encodeURIComponent(username)}`); // 登录成功后跳转到 /homepage
     } catch (error) {
       console.error(error);
       alert('登录失败，请检查用户名和密码');
@@ -104,6 +113,9 @@ function Login() {
           登录
         </button>
       </form>
+      <div style={styles.registerLink} onClick={() => navigate('/register')}>
+        注册账号
+      </div>
     </div>
   );
 }

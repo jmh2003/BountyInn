@@ -1,6 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Header from './components/Header';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import TaskList from './components/TaskList';
 import HomePage from './components/HomePage';
 import PublishTask from './components/PublishTask';
@@ -8,15 +7,14 @@ import Rankings from './components/Rankings';
 import Profile from './components/Profile';
 import ReceiveTask from './components/ReceiveTask';
 import Login from './components/Login';
+import Register from './components/Register';
+import ManageTasks from './components/ManageTask';
 import './App.css';
 
 function App() {
-  const location = useLocation();
-  const showHeader = location.pathname !== '/';
 
   return (
     <div className="App">
-      {showHeader && <Header />}
       <Routes>
         <Route path="/tasks" element={<TaskList />} />
         <Route path="/publish" element={<PublishTask />} />
@@ -24,6 +22,8 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/homepage" element={<HomePage />} />
         <Route path='/receive' element={<ReceiveTask />} />
+        <Route path='/register' element={<Register />} />
+        <Route path='/manage' element={<ManageTasks />} />
         <Route path='/' element={<Login />} />
       </Routes>
     </div>
