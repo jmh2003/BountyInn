@@ -16,13 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-
+from mysite.views import get_openai_response
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("leaderboard/", include("leaderboard.urls")),
     path("api/", include("users.urls")),
-    path("api/", include("tasks.urls"))
+    path("api/", include("tasks.urls")),
+    path('api/get_openai_response/', get_openai_response, name='get_openai_response'),
     # path("transactions/", include("transactions.urls")),
 ]
 
