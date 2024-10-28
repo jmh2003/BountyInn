@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt, faWindowMaximize, faWindowMinimize } from '@fortawesome/free-solid-svg-icons';
@@ -19,12 +18,12 @@ const NavBar = styled.nav`
 
 const Menu = styled.div`
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   flex-grow: 1;
 `;
 
 const MenuLink = styled(Link)`
-  color: white;
+  color: ${props => (props.isSelected ? '#ffd700' : 'white')};
   margin: 0 30px;
   text-decoration: none;
   cursor: pointer;
@@ -114,11 +113,21 @@ const Message = styled.div`
   color: black; /* 设置字体颜色为黑色 */
 `;
 
+const UserProfileImage = styled.img`
+  border-radius: 50%; /* 设置为圆形 */
+  height: 35px; /* 设置高度，按需调整 */
+  width: 35px; /* 设置宽度，按需调整 */
+  cursor: pointer; /* 鼠标悬停时显示为指针 */
+  margin-left: 100px; /* 添加左边距 */
+`;
+
 const Header = ({ username }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [selectedButton, setSelectedButton] = useState();
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     setInput(e.target.value);
@@ -128,7 +137,7 @@ const Header = ({ username }) => {
     e.preventDefault();
     const userMessage = { text: input, isUser: true };
     setInput('');
-  
+
     try {
       const res = await fetch('http://localhost:8000/api/get_openai_response/', {
         method: 'POST',
@@ -137,11 +146,11 @@ const Header = ({ username }) => {
         },
         body: JSON.stringify({ question: input }),
       });
-  
+
       if (!res.ok) {
         throw new Error('Network response was not ok');
       }
-  
+
       const data = await res.json();
       const botMessage = { text: data.answer || '客服kimi好累，请稍后再试', isUser: false };
       setMessages([...messages, userMessage, botMessage]);
@@ -159,18 +168,54 @@ const Header = ({ username }) => {
     setIsVisible(!isVisible);
   };
 
+  const handleMenuClick = (button, path) => {
+    return (event) => {
+      event.preventDefault(); // 阻止默认的链接跳转行为
+      setSelectedButton(button);
+      navigate(path);
+    };
+  };
+
   return (
     <NavBar>
+      <img src="/logo.png" alt="Logo" style={{ height: '40px', marginLeft: '30px', marginRight: '10px' }} />
       <Menu>
-        <MenuLink to={`/tasks?username=${encodeURIComponent(username)}`}>任务大厅</MenuLink>
-        <MenuLink to={`/manage?username=${encodeURIComponent(username)}`}>任务管理</MenuLink>
-        <MenuLink to={`/publish?username=${encodeURIComponent(username)}`}>任务发布</MenuLink>
-        <MenuLink to={`/rankings?username=${encodeURIComponent(username)}`}>排行榜</MenuLink>
-        <MenuLink to={`/Profile?username=${encodeURIComponent(username)}`}>用户信息</MenuLink>
+        <MenuLink
+          to={'/tasks'}
+          isSelected={selectedButton === 'tasks'}
+          onClick={handleMenuClick('tasks', '/tasks')}
+        >
+          任务大厅
+        </MenuLink>
+        <MenuLink
+          to={'/manage'}
+          isSelected={selectedButton === 'manage'}
+          onClick={handleMenuClick('manage', '/manage')}
+        >
+          任务管理
+        </MenuLink>
+        <MenuLink
+          to={'/publish'}
+          isSelected={selectedButton === 'publish'}
+          onClick={handleMenuClick('publish', '/publish')}
+        >
+          任务发布
+        </MenuLink>
+        <MenuLink
+          to={'/rankings'}
+          isSelected={selectedButton === 'rankings'}
+          onClick={handleMenuClick('rankings', '/rankings')}
+        >
+          排行榜
+        </MenuLink>
       </Menu>
+      <UserProfileImage
+        src="/user.jpg"
+        alt="用户信息"
+        onClick={() => window.location.href = '/Profile'}
+      />
       <ExitLink to={'/'}>
         <FontAwesomeIcon icon={faSignOutAlt} />
-        退出
       </ExitLink>
       <Draggable>
         <FloatingBall onClick={toggleVisibility}>
@@ -179,28 +224,28 @@ const Header = ({ username }) => {
         </FloatingBall>
       </Draggable>
       <Draggable>
-      <ChatBox isMinimized={isMinimized} isVisible={isVisible}>
-        <ChatHeader onClick={toggleMinimize}>
-          <span>AI 对话</span>
-          <FontAwesomeIcon icon={isMinimized ? faWindowMaximize : faWindowMinimize} />
-        </ChatHeader>
-        {!isMinimized && (
-          <>
-            {messages.map((msg, index) => (
-              <Message key={index} isUser={msg.isUser}>
-                {msg.text}
-              </Message>
-            ))}
-            <Input
-              type="text"
-              value={input}
-              onChange={handleInputChange}
-              placeholder="输入你的问题..."
-            />
-            <Button onClick={handleSubmit}>提交</Button>
-          </>
-        )}
-      </ChatBox>
+        <ChatBox isMinimized={isMinimized} isVisible={isVisible}>
+          <ChatHeader onClick={toggleMinimize}>
+            <span>AI 对话</span>
+            <FontAwesomeIcon icon={isMinimized ? faWindowMaximize : faWindowMinimize} />
+          </ChatHeader>
+          {!isMinimized && (
+            <>
+              {messages.map((msg, index) => (
+                <Message key={index} isUser={msg.isUser}>
+                  {msg.text}
+                </Message>
+              ))}
+              <Input
+                type="text"
+                value={input}
+                onChange={handleInputChange}
+                placeholder="输入你的问题..."
+              />
+              <Button onClick={handleSubmit}>提交</Button>
+            </>
+          )}
+        </ChatBox>
       </Draggable>
     </NavBar>
   );
