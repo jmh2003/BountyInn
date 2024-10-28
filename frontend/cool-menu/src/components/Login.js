@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './css/login.css';
-
 // 定义样式
 const styles = {
   backgroundImage: {
@@ -108,7 +107,9 @@ function Login() {
         password: password
       });
       console.log(response.data);
-      navigate(`/homepage?username=${encodeURIComponent(username)}`); // 登录成功后跳转到 /homepage
+      localStorage.setItem('username', response.data.username);
+      localStorage.setItem('user_id', response.user_id);
+      navigate('/tasks'); // 登录成功后跳转到 /homepage
     } catch (error) {
       console.error(error);
       alert('登录失败，请检查用户名和密码');

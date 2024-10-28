@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
 import './ManageTask.css';
 import Header from './Header';
 
 function ManageTasks() {
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const username = queryParams.get('username'); // 从 URL 中获取 username
+  const username = localStorage.getItem('username');
 
   const [tasks, setTasks] = useState([]);
 
