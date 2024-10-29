@@ -1,11 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
 import TaskList from './components/TaskList';
-import HomePage from './components/HomePage';
 import PublishTask from './components/PublishTask';
 import Rankings from './components/Rankings_new';
-import Profile from './components/Profile';
+import Profile from './components/Profile_new';
 import ReceiveTask from './components/ReceiveTask';
 import Login from './components/Login';
 import Register from './components/Register';

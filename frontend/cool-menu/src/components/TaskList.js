@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useLocation } from 'react-router-dom';
 import Header from './Header';
 import axios from 'axios'; // 导入 axios 进行 API 请求
 
@@ -146,10 +145,6 @@ const ModalContent = styled.div`
 `;
 
 const TaskList = () => {
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const username = queryParams.get('username'); // 从URL中获取用户名
-
   const user_id = 1; // 获取实际的用户ID
 
   // 定义状态来存储从后端获取到的任务列表
@@ -222,8 +217,7 @@ if (error) return <div>Error loading tasks: {error}</div>;
 
 return (
   <div>
-    <Header username={username} />
-
+    <Header />
     <SearchInput
       type="text"
       placeholder="Search tasks by title or description..."
