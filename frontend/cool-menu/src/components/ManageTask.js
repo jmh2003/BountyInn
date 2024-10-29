@@ -158,6 +158,13 @@ const EditTaskTextarea = styled.textarea`
   border-radius: 5px;
 `;
 
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: 10px; /* 调整按钮间距 */
+  margin-top: 10px;
+`;
+
 const ManageTasks = () => {
   const username = localStorage.getItem('username');
 
@@ -313,9 +320,11 @@ const handleDeleteConfirm = async () => {
                     : 'nobody'}
                 </p>
               </TaskMeta>
-              <TaskButton onClick={() => setSelectedTask(task)}>View Details</TaskButton>
-              <TaskButton onClick={() => handleEditClick(task)}>Edit</TaskButton>
-              <TaskButton onClick={() => handleDeleteClick(task)}>Delete</TaskButton>
+              <ButtonContainer>
+                <TaskButton onClick={() => setSelectedTask(task)}>View Details</TaskButton>
+                <TaskButton onClick={() => handleEditClick(task)}>Edit</TaskButton>
+                <TaskButton onClick={() => handleDeleteClick(task)}>Delete</TaskButton>
+              </ButtonContainer>
             </Task>
           ))
         ) : (
