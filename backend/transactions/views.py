@@ -1,38 +1,154 @@
+import json
+from django.shortcuts import render
+from transactions.models import Task, Candidate
+from users.models import User
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.shortcuts import render
 
-# Create your views here.
-#交易函数
-
-#根据对应的task_id，然后进行交易
-def transaction(task_id):
-    #查询到task_id
-    #查找到对应的task_id的任务
-    #查找到对应的task_id的任务的发布者和接受任务的猎人
-    #将根据任务的奖励值，将奖励值从发布者的账户中减去，然后加到猎人的账户中
-    
-    pass
-
-def assign_task(creator_id,task_id, hunter_id):
-    #将这个任务分配给猎人
-    #修改task里面的assignee_id
-    #使用is_belongs_to来判断是否是发布者
-    pass
-
-def apply_for_task(hunter_id,task_id):
-    #猎人申请任务
-
-    pass
-
-def submit_task(task_id,hunter_id):
-    #猎人提交任务
-    #首先需要检查,这个任务是不是归属于这个猎人，hunter_id是不是assignee_id
-
-    pass
-
-def review_task(task_id,creator_id):
-    #发布者对任务进行审核
-    #首先需要检查,这个任务是不是归属于这个发布者，creator_id是不是creator_id
-    #只有属于这个发布者的任务才能进行审核
-    pass
 
 
+def transaction_form(request):
+    return render(request, 'transactions/transaction_form.html')
+
+# 交易函数，基于 task_id 进行交易
+# review的时候调用，简答地修改积分
+@csrf_exempt
+def transaction(request):
+    if request.method == 'POST':
+        task_id = request.POST.get('task_id')
+        if not task_id:
+            return JsonResponse({'error': 'Task ID is required'}, status=400)
+        try:
+            task = Task.objects.get(task_id=task_id)
+            creator = task.creator_id
+            hunter = task.assignee_id
+
+            # 检查发布者是否有足够的剩余点数进行交易
+            if creator.remaining_points < task.reward_points:
+                return JsonResponse({'error': 'Insufficient points for the transaction'}, status=400)
+
+            # 减去发布者的奖励值
+            creator.remaining_points -= task.reward_points
+            creator.save()
+
+            # 将奖励值加到猎人的账户中
+            hunter.remaining_points += task.reward_points
+            hunter.save()
+
+            return JsonResponse({'message': 'Transaction successful'})
+
+        except Task.DoesNotExist:
+            return JsonResponse({'error': 'Task does not exist'}, status=404)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+# 分配任务，猎人从候选者中选择一个进行任务分配
+@csrf_exempt
+def assign_task(request):
+    if request.method == 'POST':
+        creator_id = request.POST.get('creator_id')
+        task_id = request.POST.get('task_id')
+        hunter_id = request.POST.get('hunter_id')
+        
+        if not creator_id or not task_id or not hunter_id:
+            return JsonResponse({'error': 'Creator ID, Task ID, and Hunter ID are required'}, status=400)
+
+        try:
+            task = Task.objects.get(task_id=task_id)
+
+            # 检查任务是否是 "awaiting" 状态
+            if task.task_status != 'awaiting':
+                return JsonResponse({'error': 'Task is already assigned or not available'}, status=400)
+
+            if task.creator_id.user_id == int(creator_id):
+                task.assignee_id = User.objects.get(user_id=hunter_id)
+                task.task_status = 'ongoing'
+                task.save()
+                return JsonResponse({'message': 'Task assigned successfully'})
+            else:
+                return JsonResponse({'error': 'You are not the creator of this task'}, status=403)
+
+        except Task.DoesNotExist:
+            return JsonResponse({'error': 'Task does not exist'}, status=404)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Hunter does not exist'}, status=404)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+# 申请任务，猎人进行任务申请
+@csrf_exempt
+def apply_for_task(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        hunter_id = data.get('hunter_id')
+        task_id = data.get('task_id')
+        
+        if not hunter_id or not task_id:
+            return JsonResponse({'error': 'Hunter ID and Task ID are required'}, status=400)
+
+        try:
+            task = Task.objects.get(task_id=task_id)
+
+            # 检查任务是否是 "awaiting" 状态
+            if task.task_status != 'awaiting':
+                return JsonResponse({'error': 'Task is not available for application'}, status=400)
+
+            # 检查是否已申请
+            if Candidate.objects.filter(task_id=task, user_id=hunter_id).exists():
+                return JsonResponse({'error': 'You have already applied for this task'}, status=400)
+
+            candidate = Candidate.objects.create(task_id=task, user_id=User.objects.get(user_id=hunter_id))
+            return JsonResponse({'message': 'Task applied successfully'})
+
+        except Task.DoesNotExist:
+            return JsonResponse({'error': 'Task does not exist'}, status=404)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Hunter does not exist'}, status=404)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+# 猎人提交任务，猎人完成任务后，提交对应的任务
+@csrf_exempt
+def submit_task(request):
+    if request.method == 'POST':
+        hunter_id = request.POST.get('hunter_id')
+        task_id = request.POST.get('task_id')
+        
+        if not hunter_id or not task_id:
+            return JsonResponse({'error': 'Hunter ID and Task ID are required'}, status=400)
+
+        try:
+            task = Task.objects.get(task_id=task_id)
+            if task.assignee_id.user_id == int(hunter_id):
+                task.task_status = 'finshed'
+                task.save()
+                return JsonResponse({'message': 'Task submitted successfully'})
+            else:
+                return JsonResponse({'error': 'You are not the assignee of this task'}, status=403)
+        except Task.DoesNotExist:
+            return JsonResponse({'error': 'Task does not exist'}, status=404)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+# 审核任务
+@csrf_exempt
+def review_task(request):
+    if request.method == 'POST':
+        creator_id = request.POST.get('creator_id')
+        task_id = request.POST.get('task_id')
+
+        if not creator_id or not task_id:
+            return JsonResponse({'error': 'Creator ID and Task ID are required'}, status=400)
+
+        try:
+            task = Task.objects.get(task_id=task_id)
+            if task.creator_id.user_id == int(creator_id):
+                task.is_reviewed = True
+                task.save()
+                return JsonResponse({'message': 'Task reviewed successfully'})
+            else:
+                return JsonResponse({'error': 'You are not the creator of this task'}, status=403)
+        except Task.DoesNotExist:
+            return JsonResponse({'error': 'Task does not exist'}, status=404)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)

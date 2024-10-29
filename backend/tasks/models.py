@@ -12,6 +12,7 @@ TASK_TAG_CHOICES = [
     ('Learning', 'Learning'),
     ('Life', 'Life'),
     ('Job', 'Job'),
+    ('Else', 'Else'),
 ]
 
 class Task(models.Model):

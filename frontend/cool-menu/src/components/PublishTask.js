@@ -58,9 +58,10 @@ function PublishTask() {
         <form onSubmit={handleSubmit}>
           <label htmlFor="task_tag">Task Tag:</label>
           <select id="task_tag" value={taskTag} onChange={(e) => setTaskTag(e.target.value)}>
-            <option value="learning">Learning</option>
-            <option value="life">Life</option>
-            <option value="job">Job</option>
+            <option value="Learning">Learning</option>
+            <option value="Life">Life</option>
+            <option value="Job">Job</option>
+            <option value='Else'>Else</option>
           </select><br />
 
           <label htmlFor="task_title">Task Title:</label>

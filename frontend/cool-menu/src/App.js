@@ -21,7 +21,7 @@ function App() {
         <Route path="/publish" element={<PublishTask />} />
         <Route path="/rankings" element={<Rankings />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/homepage" element={<HomePage />} />
+        <Route path="/homepage" element={<TaskList />} />
         <Route path='/receive' element={<ReceiveTask />} />
         <Route path='/register' element={<Register />} />
         <Route path='/manage' element={<ManageTasks />} />

@@ -19,6 +19,9 @@ def add_task(request):
             if creator is None:
                 return JsonResponse({'error': 'User not found'}, status=404)
 
+            task_tag = data.get('task_tag')
+            print(f"Received task_tag: {task_tag}")
+
             # 创建任务
             task = Task(
                 task_tag=data.get('task_tag'),
@@ -30,6 +33,7 @@ def add_task(request):
                 task_status='awaiting',
                 is_reviewed=False
             )
+            # print(task.task_tag)
             task.save()  # 保存任务
             return JsonResponse({'message': 'Task added successfully'})
 
@@ -153,3 +157,15 @@ def find_task_by_id(task_id):
         return task  # 返回任务实体
     except Task.DoesNotExist:
         return None  # 如果任务不存在，返回 None
+
+def get_all_tasks(request):
+    try:
+        tasks = Task.objects.all().values(
+            'task_id', 'task_tag', 'task_title', 'task_description',
+            'creator_id', 'assignee_id', 'task_status', 'reward_points', 'deadline', 'is_reviewed'
+        )
+        task_list = list(tasks)
+        return JsonResponse(task_list, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
