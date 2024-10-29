@@ -5,6 +5,9 @@ urlpatterns = [
     path("", views.index, name="index"),
     path('add_task/', views.add_task, name='add_task'),
     path('delete_task/', views.delete_task, name='delete_task'),
-    path('tasks/', views.get_user_tasks, name='get_user_tasks'),   # 添加此行
+    path('tasks/', views.get_user_tasks, name='get_user_tasks'),
     path('all_tasks/', views.get_all_tasks, name='get_all_tasks'),
+    path('change_task/', views.change_task, name='change_task'),
+    path('delete_task/', views.delete_task, name='delete_task'),
+    path('user/<int:user_id>/', views.get_user_info, name='get_user_info')
 ]
