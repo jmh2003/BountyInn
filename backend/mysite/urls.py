@@ -24,6 +24,6 @@ urlpatterns = [
     path("api/", include("users.urls")),
     path("api/", include("tasks.urls")),
     path('api/get_openai_response/', get_openai_response, name='get_openai_response'),
-    # path("transactions/", include("transactions.urls")),
+    path("transactions/", include("transactions.urls")),
 ]
 
