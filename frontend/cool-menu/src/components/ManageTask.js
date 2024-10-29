@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ManageTask.css';
 import styled from 'styled-components';
-import { useLocation } from 'react-router-dom';
 import Header from './Header';
 
 
@@ -160,10 +159,6 @@ const EditTaskTextarea = styled.textarea`
 `;
 
 const ManageTasks = () => {
-  const location = useLocation();
-  //const queryParams = new URLSearchParams(location.search);
- // const username = queryParams.get('username');
-
   const username = localStorage.getItem('username');
 
   const [tasks, setTasks] = useState([]);
@@ -279,7 +274,7 @@ const handleDeleteConfirm = async () => {
 
   return (
     <div>
-      <Header username={username} />
+      <Header />
       <SearchInput
         type="text"
         placeholder="Search tasks by title or description..."

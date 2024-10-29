@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
 import './PublishTask.css';
 import Header from './Header';
 
 function PublishTask() {
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const username = queryParams.get('username');
-
+  const username = localStorage.getItem('username');
   const [taskTag, setTaskTag] = useState('learning');
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
@@ -86,7 +82,7 @@ function PublishTask() {
 
   return (
     <div>
-      <Header username={username} />
+      <Header />
       <div className="publish-task-container">
         <h2>Add Task</h2>
         {successMessage && <div className="success-message">{successMessage}</div>}
@@ -99,14 +95,6 @@ function PublishTask() {
             <option value="Job">Job</option>
             <option value='Else'>Else</option>
           </select><br />
-          <div className="form-group">
-            <label htmlFor="task_tag">Task Tag:</label>
-            <select id="task_tag" value={taskTag} onChange={(e) => setTaskTag(e.target.value)}>
-              <option value="Learning">Learning</option>
-              <option value="Life">Life</option>
-              <option value="Job">Job</option>
-            </select>
-          </div>
 
           <div className="form-group">
             <label htmlFor="task_title">Task Title:</label>

@@ -3,8 +3,6 @@ import styled from 'styled-components';
 import axios from 'axios';
 import Header from './Header'; // 引入 Header 组件
 
-const username = localStorage.getItem('username');
-
 // 样式设置
 const Container = styled.div`
   display: flex;
@@ -130,8 +128,7 @@ const Rankings = () => {
 
   return (
     <div>
-      <Header username={username} /> {/* 添加 Header 组件 */}
-
+      <Header /> 
       <Container>
         <TableContainer>
           <h2>排行榜</h2>
