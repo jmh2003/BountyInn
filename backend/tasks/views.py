@@ -17,11 +17,8 @@ def index(request):
 def add_task(request):
     if request.method == 'POST':
         try:
-            print("hasgdasgds")
             data = json.loads(request.body)
-            print(data)
             nickname = data.get('username')  # 从请求数据中获取nickname
-            print("Received nickname: ", nickname)
             creator = User.objects.filter(nickname=nickname).first()
             if creator is None:
                 return JsonResponse({'error': 'User not found'}, status=404)
