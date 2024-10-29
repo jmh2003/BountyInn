@@ -152,3 +152,30 @@ def review_task(request):
         except Task.DoesNotExist:
             return JsonResponse({'error': 'Task does not exist'}, status=404)
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+@csrf_exempt
+def check_task_applied(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        hunter_id = data.get('hunter_id')
+        task_id = data.get('task_id')
+        
+        if not hunter_id or not task_id:
+            return JsonResponse({'error': 'Hunter ID and Task ID are required'}, status=400)
+
+        try:
+            task = Task.objects.get(task_id=task_id)
+
+            # 检查是否已申请
+            if Candidate.objects.filter(task_id=task, user_id=hunter_id).exists():
+                return JsonResponse({'applied': True})
+            else:
+                return JsonResponse({'applied': False})
+
+        except Task.DoesNotExist:
+            return JsonResponse({'error': 'Task does not exist'}, status=404)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Hunter does not exist'}, status=404)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+

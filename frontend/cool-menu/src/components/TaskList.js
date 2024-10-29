@@ -122,7 +122,6 @@ const FilterButton = styled.button`
   }
 `;
 
-// 弹出框背景样式
 const ModalBackground = styled.div`
   position: fixed;
   top: 0;
@@ -135,7 +134,6 @@ const ModalBackground = styled.div`
   justify-content: center;
 `;
 
-// 弹出框内容样式
 const ModalContent = styled.div`
   background-color: white;
   padding: 20px;
@@ -145,17 +143,15 @@ const ModalContent = styled.div`
 `;
 
 const TaskList = () => {
-  const user_id = 1; // 获取实际的用户ID
-
-  // 定义状态来存储从后端获取到的任务列表
+  const user_id = 1; // 假设获取当前登录用户的 ID
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(''); // 用于存储搜索的关键字
-  const [selectedTag, setSelectedTag] = useState('All'); // 标签筛选的状态
-  const [selectedTask, setSelectedTask] = useState(null); // 用于存储选中的任务详情
-  const [applyMessage, setApplyMessage] = useState(''); // 存储任务申请的反馈信息
-  const [appliedTasks, setAppliedTasks] = useState([]); // 用于存储已经申请的任务ID列表
+  const [searchTerm, setSearchTerm] = useState(''); // 用于搜索任务的关键词
+  const [selectedTag, setSelectedTag] = useState('All'); // 用于筛选任务的标签
+  const [selectedTask, setSelectedTask] = useState(null); // 当前选中的任务
+  const [applyMessage, setApplyMessage] = useState(''); // 任务申请反馈信息
+  const [appliedTasks, setAppliedTasks] = useState([]); // 已申请的任务ID列表
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -172,126 +168,137 @@ const TaskList = () => {
     fetchTasks();
   }, []);
 
-// 申请任务的功能
-const handleApply = async (taskId) => {
-  try {
-    // 检查是否有 user_id
-    if (!user_id) {
-      setApplyMessage('User ID is missing. Please log in.');
-      return;
+  const handleApply = async (taskId) => {
+    try {
+      if (!user_id) {
+        setApplyMessage('User ID is missing. Please log in.');
+        return;
+      }
+
+      const response = await axios.post('http://127.0.0.1:8000/transactions/apply_for_task/', {
+        hunter_id: user_id,
+        task_id: taskId,
+      });
+
+      if (response.data.message) {
+        setApplyMessage(response.data.message);
+        setAppliedTasks([...appliedTasks, taskId]); // 任务申请成功后更新已申请任务的列表
+      } else if (response.data.error) {
+        setApplyMessage(response.data.error);
+      }
+    } catch (err) {
+      if (err.response && err.response.data && err.response.data.error) {
+        setApplyMessage(err.response.data.error);
+      } else {
+        setApplyMessage('Error occurred while applying for the task.');
+      }
     }
+  };
 
-    const response = await axios.post('http://127.0.0.1:8000/transactions/apply_for_task/', {
-      hunter_id: user_id, // 使用用户ID
-      task_id: taskId,
-    });
+  const checkIfTaskApplied = async (taskId) => {
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/transactions/check_task_applied/', {
+        hunter_id: user_id,
+        task_id: taskId,
+      });
 
-    if (response.data.message) {
-      setApplyMessage(response.data.message);
-      setAppliedTasks([...appliedTasks, taskId]); // 申请成功后，将任务ID加入到已申请任务的列表中
-    } else if (response.data.error) {
-      setApplyMessage(response.data.error);
+      if (response.data.applied) {
+        setAppliedTasks([...appliedTasks, taskId]); // 如果任务已申请，加入到 appliedTasks 列表中
+      }
+    } catch (err) {
+      console.error("Error checking task applied status:", err);
     }
-  } catch (err) {
-    if (err.response && err.response.data && err.response.data.error) {
-      // 如果后端有返回错误信息，使用后端的错误信息
-      setApplyMessage(err.response.data.error);
-    } else {
-      // 否则使用默认的错误信息
-      setApplyMessage('Error occurred while applying for the task.');
-    }
-  }
-};
+  };
 
-// 根据搜索关键词和标签筛选任务
-const filteredTasks = tasks.filter(task =>
-  (selectedTag === 'All' || task.task_tag.toLowerCase() === selectedTag.toLowerCase()) &&
-  (task.task_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.task_description.toLowerCase().includes(searchTerm.toLowerCase()))
-);
+  const openTaskModal = (task) => {
+    setSelectedTask(task);
+    setApplyMessage('');
+    checkIfTaskApplied(task.task_id); // 检查任务是否已申请
+  };
 
-const tags = ['All', ...new Set(tasks.map(task => task.task_tag).filter(tag => tag !== 'Else')), 'Else'];
+  const filteredTasks = tasks.filter(task =>
+    (selectedTag === 'All' || task.task_tag.toLowerCase() === selectedTag.toLowerCase()) &&
+    (task.task_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.task_description.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
-if (loading) return <div>Loading tasks...</div>;
-if (error) return <div>Error loading tasks: {error}</div>;
+  const tags = ['All', ...new Set(tasks.map(task => task.task_tag).filter(tag => tag !== 'Else')), 'Else'];
 
-return (
-  <div>
-    <Header />
-    <SearchInput
-      type="text"
-      placeholder="Search tasks by title or description..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-    />
+  if (loading) return <div>Loading tasks...</div>;
+  if (error) return <div>Error loading tasks: {error}</div>;
 
-    <FilterContainer>
-      {tags.map(tag => (
-        <FilterButton
-          key={tag}
-          active={selectedTag === tag}
-          onClick={() => setSelectedTag(tag)}
-        >
-          {tag}
-        </FilterButton>
-      ))}
-    </FilterContainer>
+  return (
+    <div>
+      <Header />
+      <SearchInput
+        type="text"
+        placeholder="Search tasks by title or description..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
 
-    <TaskListContainer>
-      {filteredTasks.length > 0 ? (
-        filteredTasks.map(task => (
-          <Task key={task.task_id} tag={task.task_tag}>
-            <TaskTitle>{task.task_title}</TaskTitle>
-            <TaskMeta>
-              <span><strong>Tag:</strong> {task.task_tag}</span>
-              <span><strong>Reward Points:</strong> {task.reward_points}</span>
-              <span><strong>Status:</strong> {task.task_status}</span>
-              <span><strong>Deadline:</strong> {new Date(task.deadline).toLocaleString()}</span>
-            </TaskMeta>
-            <TaskButton
-              onClick={() => { 
-                setSelectedTask(task); 
-                setApplyMessage(''); // 清除申请任务的反馈信息
-              }}
-            >
-              View Details
-            </TaskButton>
-          </Task>
-        ))
-      ) : (
-        <p>No tasks found.</p>
-      )}
-    </TaskListContainer>
-
-    {selectedTask && (
-      <ModalBackground onClick={() => { setSelectedTask(null); setApplyMessage(''); }}>
-        <ModalContent onClick={(e) => e.stopPropagation()}>
-          <h3>{selectedTask.task_title}</h3>
-          <p>{selectedTask.task_description}</p>
-          <TaskMeta>
-            <span><strong>Tag:</strong> {selectedTask.task_tag}</span>
-            <span><strong>Reward Points:</strong> {selectedTask.reward_points}</span>
-            <span><strong>Status:</strong> {selectedTask.task_status}</span>
-            <span><strong>Deadline:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
-          </TaskMeta>
-
-          {/* 申请任务的按钮，如果任务已经申请，则按钮变灰 */}
-          <TaskButton
-            onClick={() => handleApply(selectedTask.task_id)}
-            disabled={appliedTasks.includes(selectedTask.task_id)} // 如果任务已申请，禁用按钮
+      <FilterContainer>
+        {tags.map(tag => (
+          <FilterButton
+            key={tag}
+            active={selectedTag === tag}
+            onClick={() => setSelectedTag(tag)}
           >
-            {appliedTasks.includes(selectedTask.task_id) ? 'Already Applied' : 'Apply for Task'}
-          </TaskButton>
+            {tag}
+          </FilterButton>
+        ))}
+      </FilterContainer>
 
-          {/* 显示申请反馈信息 */}
-          {applyMessage && <p>{applyMessage}</p>}
+      <TaskListContainer>
+        {filteredTasks.length > 0 ? (
+          filteredTasks.map(task => (
+            <Task key={task.task_id} tag={task.task_tag}>
+              <TaskTitle>{task.task_title}</TaskTitle>
+              <TaskMeta>
+                <span><strong>Tag:</strong> {task.task_tag}</span>
+                <span><strong>Reward Points:</strong> {task.reward_points}</span>
+                <span><strong>Status:</strong> {task.task_status}</span>
+                <span><strong>Deadline:</strong> {new Date(task.deadline).toLocaleString()}</span>
+              </TaskMeta>
+              <TaskButton
+                onClick={() => openTaskModal(task)}
+              >
+                View Details
+              </TaskButton>
+            </Task>
+          ))
+        ) : (
+          <p>No tasks found.</p>
+        )}
+      </TaskListContainer>
 
-          <TaskButton onClick={() => setSelectedTask(null)}>Close</TaskButton>
-        </ModalContent>
-      </ModalBackground>
-    )}
-  </div>
-);
+      {selectedTask && (
+        <ModalBackground onClick={() => { setSelectedTask(null); setApplyMessage(''); }}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <h3>{selectedTask.task_title}</h3>
+            <p>{selectedTask.task_description}</p>
+            <TaskMeta>
+              <span><strong>Tag:</strong> {selectedTask.task_tag}</span>
+              <span><strong>Reward Points:</strong> {selectedTask.reward_points}</span>
+              <span><strong>Status:</strong> {selectedTask.task_status}</span>
+              <span><strong>Deadline:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
+            </TaskMeta>
+
+            <TaskButton
+              onClick={() => handleApply(selectedTask.task_id)}
+              disabled={appliedTasks.includes(selectedTask.task_id)} // 如果任务已申请，禁用按钮
+            >
+              {appliedTasks.includes(selectedTask.task_id) ? 'Already Applied' : 'Apply for Task'}
+            </TaskButton>
+
+            {applyMessage && <p>{applyMessage}</p>}
+
+            <TaskButton onClick={() => setSelectedTask(null)}>Close</TaskButton>
+          </ModalContent>
+        </ModalBackground>
+      )}
+    </div>
+  );
 };
 
 export default TaskList;

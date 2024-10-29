@@ -8,4 +8,5 @@ urlpatterns = [
     path('submit_task/', views.submit_task, name='submit_task'),
     path('review_task/', views.review_task, name='review_task'),
     path('', views.transaction_form, name='transaction_form'),
+    path('check_task_applied/', views.check_task_applied, name='check_task_applied'),
 ]
