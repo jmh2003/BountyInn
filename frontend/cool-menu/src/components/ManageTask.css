@@ -1,41 +1,50 @@
 .tasks-container {
   padding: 20px;
-  max-width: 800px;
-  margin: auto;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .tasks-list {
-  display: flex;
-  flex-direction: column; /* 列布局 */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
+@media (max-width: 1024px) {
+  .tasks-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .tasks-list {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
 .task-card {
-  background-color: white;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 15px;
-  width: 100%; /* 每个任务卡片占满一行 */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
   transition: transform 0.2s;
 }
 
 .task-card:hover {
-  transform: translateY(-5px);
+  transform: scale(1.02);
 }
 
 .task-title {
-  font-size: 1.5em;
-  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: bold;
 }
 
 .task-description {
   margin: 10px 0;
 }
 
-.task-tag, .task-reward, .task-status, .task-deadline {
-  color: #666;
-  margin: 5px 0;
+.task-tag,
+.task-reward,
+.task-status,
+.task-deadline {
+  font-size: 14px;
+  color: #555;
 }
