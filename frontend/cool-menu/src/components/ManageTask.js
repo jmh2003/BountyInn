@@ -4,8 +4,6 @@ import './ManageTask.css';
 import styled from 'styled-components';
 import Header from './Header';
 
-
-
 const TaskListContainer = styled.div`
   padding: 20px;
   display: grid;
@@ -161,7 +159,7 @@ const EditTaskTextarea = styled.textarea`
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  gap: 10px; /* 调整按钮间距 */
+  gap: 10px;
   margin-top: 10px;
 `;
 
@@ -178,8 +176,7 @@ const ManageTasks = () => {
   const [editTaskData, setEditTaskData] = useState({});
   const [selectedUser, setSelectedUser] = useState(null);
   const [userInfo, setUserInfo] = useState({});
-
-
+  const [confirmDeleteTask, setConfirmDeleteTask] = useState(null); // 确认删除任务的状态
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -196,7 +193,9 @@ const ManageTasks = () => {
     fetchTasks();
   }, [username]);
 
+  // 筛选任务时排除掉已删除 (aborted) 的任务
   const filteredTasks = tasks.filter(task =>
+    task.task_status !== 'aborted' && // 排除掉已删除的任务
     (selectedTag === 'All' || task.task_tag.toLowerCase() === selectedTag.toLowerCase()) &&
     (task.task_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.task_description.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -239,27 +238,27 @@ const ManageTasks = () => {
     } catch (error) {
         console.error('Error updating task:', error);
     }
-};
+  };
 
-const [confirmDeleteTask, setConfirmDeleteTask] = useState(null);
+  const handleDeleteClick = (task) => {
+    setConfirmDeleteTask(task); // 设置当前选择要删除的任务
+  };
 
-const handleDeleteClick = (task) => {
-  setConfirmDeleteTask(task);
-};
+  const handleDeleteConfirm = async () => {
+    try {
+      await axios.patch(`http://127.0.0.1:8000/api/delete_task/`, {
+        task_id: confirmDeleteTask.task_id,
+      });
 
-const handleDeleteConfirm = async () => {
-  try {
-    await axios.patch(`http://127.0.0.1:8000/api/delete_task/`, {
-      task_id: confirmDeleteTask.task_id,
-    });
-    setTasks(tasks.map(task =>
-      task.task_id === confirmDeleteTask.task_id ? { ...task, task_status: 'aborted' } : task
-    ));
-    setConfirmDeleteTask(null);
-  } catch (error) {
-    console.error('Error updating task status:', error);
-  }
-};
+      // 在前端移除已删除的任务
+      setTasks(tasks.filter(task => task.task_id !== confirmDeleteTask.task_id));
+
+      setConfirmDeleteTask(null); // 重置确认状态
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  };
+
   if (loading) {
     return <div>Loading tasks...</div>;
   }
@@ -269,15 +268,14 @@ const handleDeleteConfirm = async () => {
   }
 
   const handleUserClick = async (userId) => {
-  try {
-    const response = await axios.get(`http://127.0.0.1:8000/api/user/${userId}`);
-    setUserInfo(response.data);
-    setSelectedUser(userId);
-  } catch (error) {
-    console.error('Error fetching user info:', error);
-  }
-};
-
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/api/user/${userId}`);
+      setUserInfo(response.data);
+      setSelectedUser(userId);
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+    }
+  };
 
   return (
     <div>
@@ -390,16 +388,15 @@ const handleDeleteConfirm = async () => {
       )}
 
       {selectedUser && (
-          <ModalBackground onClick={() => setSelectedUser(null)}>
-            <ModalContent onClick={(e) => e.stopPropagation()}>
-              <h3>{userInfo.nickname}</h3>
-              <p><strong>Credit Score:</strong> {userInfo.credit_score}</p>
-              <p><strong>Ability Score:</strong> {userInfo.ability_score}</p>
-              <TaskButton onClick={() => setSelectedUser(null)}>Close</TaskButton>
-            </ModalContent>
-          </ModalBackground>
-        )}
-
+        <ModalBackground onClick={() => setSelectedUser(null)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <h3>{userInfo.nickname}</h3>
+            <p><strong>Credit Score:</strong> {userInfo.credit_score}</p>
+            <p><strong>Ability Score:</strong> {userInfo.ability_score}</p>
+            <TaskButton onClick={() => setSelectedUser(null)}>Close</TaskButton>
+          </ModalContent>
+        </ModalBackground>
+      )}
 
       {/* 删除确认弹窗 */}
       {confirmDeleteTask && (
