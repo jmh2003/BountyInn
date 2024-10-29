@@ -3,142 +3,289 @@ import styled from 'styled-components';
 import axios from 'axios';
 import Header from './Header';
 
-// 样式设置
-const Container = styled.div`
+const username = localStorage.getItem('username');
+
+const PageContainer = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: center;
   padding: 20px;
   background-color: #f0f4f7;
-`;
-
-const UserCard = styled.div`
-  background-color: #ffffff;
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 500px;
-  text-align: center;
-  background: linear-gradient(135deg, #e3f2fd 30%, #fce4ec 90%);
+  height: 100vh;
 `;
 
-const Header1 = styled.h2`
-  color: #3f51b5;
+const Sidebar = styled.div`
+  width: 250px;
+  background-color: #e3f2fd;
+  padding: 20px;
+  border-radius: 10px;
+  margin-right: 20px;
+`;
+
+const SidebarOption = styled.div`
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: ${props => (props.active ? '#2196f3' : 'transparent')};
+  color: ${props => (props.active ? 'white' : '#333')};
+  font-weight: ${props => (props.active ? 'bold' : 'normal')};
+  &:hover {
+    background-color: #bbdefb;
+  }
+`;
+
+const MainContainer = styled.div`
+  flex: 1;
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+`;
+
+const SectionTitle = styled.h2`
+  color: #333;
+  border-bottom: 2px solid #e0f7fa;
+  padding-bottom: 10px;
   margin-bottom: 20px;
 `;
 
-const InfoRow = styled.div`
-  margin-bottom: 15px;
-  display: flex;
-  justify-content: space-between;
+const InfoSection = styled.div`
+  margin-bottom: 20px;
+  text-align: left;
+`;
+
+const Label = styled.div`
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+`;
+
+const Content = styled.div`
   padding: 10px;
   background-color: #f7f7f7;
   border-radius: 8px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #555;
 `;
 
-const Label = styled.span`
-  font-weight: bold;
-  color: #424242;
+const AvatarContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* 左对齐 */
+  margin-bottom: 20px;
 `;
 
-const Placeholder = styled.span`
-  color: #9e9e9e;
-  font-style: italic;
+const Avatar = styled.img`
+  width: 150px;
+  height: 150px;
+  border-radius: 50%; /* 确保头像为圆形 */
+  border: 3px solid #ddd;
+`;
+
+const StyledInput = styled.input`
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
 `;
 
 const Button = styled.button`
   padding: 10px 20px;
-  background-color: #4caf50;
+  background-color: #26a69a;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  margin-top: 15px;
+  margin-top: 10px;
   &:hover {
-    background-color: #388e3c;
+    background-color: #00796b;
   }
 `;
 
-const UserInfo = ({ username }) => {
-  const [userInfo, setUserInfo] = useState(null);
-  const [loading, setLoading] = useState(true);
+const Modal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
 
-  // 从后端获取用户信息的函数
+const ModalContent = styled.div`
+  width: 400px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+`;
+
+const UserInfo = ({ username }) => {
+  const [userInfo, setUserInfo] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState('personalInfo');
+  const [showModal, setShowModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newNickname, setNewNickname] = useState('');
+  const [feedback, setFeedback] = useState(null);
+
   const fetchUserInfo = async () => {
     try {
-      const response = await axios.post('/api/get-user-info/', { username });
-      setUserInfo(response.data.user);  // 假设后端返回的数据结构
-      setLoading(false);  // 数据获取后设置为非加载状态
+      const response = await axios.post('http://127.0.0.1:8000/api/get-user-info/', { username });
+      setUserInfo(response.data.user);
+      setLoading(false);
     } catch (error) {
       console.error("获取用户信息失败", error);
-      setLoading(false);  // 获取失败后同样设置为非加载状态
+      setLoading(false);
     }
   };
 
-  // 页面加载时从后端获取数据
+  const updatePassword = async () => {
+    if (newPassword === confirmPassword) {
+      try {
+        const response = await axios.post('http://127.0.0.1:8000/api/update-password/', { username, newPassword });
+        setShowModal(false);
+        setFeedback(response.data.message || "密码已更新");
+      } catch (error) {
+        setFeedback("密码更新失败");
+        console.error("密码更新失败", error);
+      }
+    } else {
+      setFeedback("密码不匹配，请重新输入");
+    }
+  };
+
+  const updateNickname = async () => {
+    if (newNickname) {
+      try {
+        const response = await axios.post('http://127.0.0.1:8000/api/update-nickname/', { username, newNickname });
+        setFeedback(response.data.message || "昵称已更新");
+      } catch (error) {
+        setFeedback("昵称更新失败");
+        console.error("昵称更新失败", error);
+      }
+    } else {
+      setFeedback("请输入新昵称");
+    }
+  };
+
   useEffect(() => {
     fetchUserInfo();
   }, [username]);
 
-  // 如果数据在加载过程中，显示“加载中...”占位符
   if (loading) {
     return <p>正在加载用户信息...</p>;
   }
 
   return (
     <div>
-        <Header />
-        <Container>
-            <UserCard>
-                <Header1>用户信息</Header1>
+      <Header username={username} />
 
-                {/* 用户ID */}
-                <InfoRow>
-                <Label>用户ID:</Label>
-                {userInfo ? <span>{userInfo.user_id}</span> : <Placeholder>数据不可用</Placeholder>}
-                </InfoRow>
+      <PageContainer>
+        {/* 左侧选择栏 */}
+        <Sidebar>
+          <SidebarOption
+            active={activeSection === 'personalInfo'}
+            onClick={() => setActiveSection('personalInfo')}
+          >
+            个人信息
+          </SidebarOption>
+          <SidebarOption
+            active={activeSection === 'accountSettings'}
+            onClick={() => setActiveSection('accountSettings')}
+          >
+            账号设置
+          </SidebarOption>
+        </Sidebar>
 
-                {/* 姓名 */}
-                <InfoRow>
-                <Label>姓名:</Label>
-                {userInfo ? <span>{userInfo.nickname}</span> : <Placeholder>数据不可用</Placeholder>}
-                </InfoRow>
+        {/* 右侧内容展示 */}
+        <MainContainer>
+          {activeSection === 'personalInfo' ? (
+            <>
+              <SectionTitle>个人信息</SectionTitle>
+              <AvatarContainer>
+                <Label>头像</Label>
+                <Avatar src={userInfo.avatar || '/default-avatar.png'} alt="用户头像" />
+              </AvatarContainer>
+              <InfoSection>
+                <Label>昵称</Label>
+                <Content>{userInfo.nickname || '加载中...'}</Content>
+              </InfoSection>
+              <InfoSection>
+                <Label>用户ID</Label>
+                <Content>{userInfo.user_id || '加载中...'}</Content>
+              </InfoSection>
+              <InfoSection>
+                <Label>信用分数</Label>
+                <Content>{userInfo.credit_score || '加载中...'}</Content>
+              </InfoSection>
+              <InfoSection>
+                <Label>剩余积分</Label>
+                <Content>{userInfo.remaining_points || '加载中...'}</Content>
+              </InfoSection>
+              <InfoSection>
+                <Label>能力分数</Label>
+                <Content>{userInfo.ability_score || '加载中...'}</Content>
+              </InfoSection>
+              <InfoSection>
+                <Label>是否活跃</Label>
+                <Content>{userInfo.is_alive ? '活跃' : '未活跃'}</Content>
+              </InfoSection>
+              <InfoSection>
+                <Label>自我介绍</Label>
+                <Content>{userInfo.user_introduction || '加载中...'}</Content>
+              </InfoSection>
+            </>
+          ) : (
+            <>
+              <SectionTitle>账号设置</SectionTitle>
+              <InfoSection>
+                <Label>昵称</Label>
+                <StyledInput
+                  type="text"
+                  placeholder="输入新的昵称"
+                  value={newNickname}
+                  onChange={(e) => setNewNickname(e.target.value)}
+                />
+                <Button onClick={updateNickname}>修改昵称</Button>
+              </InfoSection>
+              <InfoSection>
+                <Label>用户密码</Label>
+                <Button onClick={() => setShowModal(true)}>修改密码</Button>
+              </InfoSection>
+            </>
+          )}
+          {feedback && <p style={{ color: feedback.includes("失败") ? "red" : "green" }}>{feedback}</p>}
+        </MainContainer>
 
-                {/* 用户简介 */}
-                <InfoRow>
-                <Label>用户简介:</Label>
-                {userInfo ? <span>{userInfo.user_introduction}</span> : <Placeholder>数据不可用</Placeholder>}
-                </InfoRow>
-
-                {/* 信用分数 */}
-                <InfoRow>
-                <Label>信用分数:</Label>
-                {userInfo ? <span>{userInfo.credit_score}</span> : <Placeholder>数据不可用</Placeholder>}
-                </InfoRow>
-
-                {/* 剩余积分 */}
-                <InfoRow>
-                <Label>剩余积分:</Label>
-                {userInfo ? <span>{userInfo.remaining_points}</span> : <Placeholder>数据不可用</Placeholder>}
-                </InfoRow>
-
-                {/* 能力分数 */}
-                <InfoRow>
-                <Label>能力分数:</Label>
-                {userInfo ? <span>{userInfo.ability_score}</span> : <Placeholder>数据不可用</Placeholder>}
-                </InfoRow>
-
-                {/* 活跃状态 */}
-                <InfoRow>
-                <Label>活跃状态:</Label>
-                {userInfo ? <span>{userInfo.is_alive ? '活跃' : '未活跃'}</span> : <Placeholder>数据不可用</Placeholder>}
-                </InfoRow>
-
-                <Button>显示更多信息</Button>
-            </UserCard>
-        </Container>
+        {/* 修改密码弹出框 */}
+        {showModal && (
+          <Modal>
+            <ModalContent>
+              <h3>修改密码</h3>
+              <StyledInput
+                type="password"
+                placeholder="输入新密码"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <StyledInput
+                type="password"
+                placeholder="确认新密码"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <Button onClick={updatePassword}>确认修改</Button>
+              <Button onClick={() => setShowModal(false)} style={{ marginTop: '10px', backgroundColor: '#e57373' }}>
+                取消
+              </Button>
+            </ModalContent>
+          </Modal>
+        )}
+      </PageContainer>
     </div>
   );
 };

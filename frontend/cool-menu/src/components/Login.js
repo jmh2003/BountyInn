@@ -32,7 +32,8 @@ const styles = {
     marginBottom: '30px',
     fontSize: '44px',
     fontWeight: 'bold',
-    background: 'linear-gradient(120deg, #a6c0fe 0%, #f68084 100%)', // 设置您想要的渐变背景
+    //background: 'linear-gradient(120deg, #a6c0fe 0%, #f68084 100%)', // 设置您想要的渐变背景
+   background: 'linear-gradient(120deg, rgb(250,247,171) 0%, #FFD700 100%)', 
     WebkitBackgroundClip: 'text', // 剪裁背景到文本
     color: 'transparent', // 文字颜色设置为透明
   },
@@ -71,14 +72,15 @@ const styles = {
     padding: '10px',
     border: 'none',
     borderRadius: '20px',
-    background: 'linear-gradient(120deg, #a6c0fe 0%, #f68084 100%)',
-    color: 'white',
+    background: 'linear-gradient(120deg, rgb(250,247,171) 0%, #FFD700 100%)', 
+    //background: 'linear-gradient(120deg, #a6c0fe 0%, #f68084 100%)',
+    color: 'black',
     fontSize: '16px',
     cursor: 'pointer',
     transition: 'background-color 0.2s',
   },
   loginButtonHover: {
-    backgroundColor: '#0056b3',
+    backgroundColor: '#FFD700' //'#0056b3',
   },
   registerLink: {
     display: 'block',

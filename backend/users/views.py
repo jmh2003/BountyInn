@@ -49,12 +49,12 @@ def login(request):
     data = json.loads(request.body)
     nickname = data.get('username')
     password = data.get('password')
-    user = authenticate(request, username=nickname, password=password)
+    #user = authenticate(request, username=nickname, password=password)
 
     try:
         user_id = user_login(nickname, password)
         if user_id:
-            auth_login(request, user)
+            #auth_login(request, user)
             response = JsonResponse({'message': 'Login successful', "username": nickname, "user_id": user_id})
             return response  
         else:
