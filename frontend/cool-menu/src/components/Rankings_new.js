@@ -100,7 +100,7 @@ const Rankings = () => {
   const [rankings, setRankings] = useState([]);
   const [rankType, setRankType] = useState('剩余积分');
   const [userRank, setUserRank] = useState(null);
-  const [userId, setUserId] = useState(''); // 假设用户输入ID或其他标识
+  const [username, setUserId] = useState(''); // 假设用户输入ID或其他标识
 
   // 获取排名数据
   const fetchRankings = async (type) => {
@@ -115,7 +115,7 @@ const Rankings = () => {
   // 获取用户个人排名
   const fetchUserRank = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/get-user-rank/', { rankType, userId });
+      const response = await axios.post('http://127.0.0.1:8000/api/get-user-rank/', { rankType, username });
       setUserRank(response.data.userRank);
     } catch (error) {
       console.error("获取用户排名失败", error);
@@ -165,13 +165,21 @@ const Rankings = () => {
           </BlueSelection>
 
           <RedSelection>
-            <h3>查询个人排名</h3>
+            <h3>查询个人排名,输入用户名称：</h3>
             <StyledInput
               type="text"
               placeholder="输入你的ID"
-              value={userId}
+              value={username}
               onChange={(e) => setUserId(e.target.value)}
             />
+            <BlueSelection>
+            <h3>选择排名种类</h3>
+            <StyledSelect value={rankType} onChange={(e) => setRankType(e.target.value)}>
+              <option value="剩余积分">剩余积分</option>
+              <option value="能力分数">能力分数</option>
+              <option value="信用分数">信用分数</option>
+            </StyledSelect>
+          </BlueSelection>
             <StyledButton onClick={fetchUserRank}>查询</StyledButton>
             {userRank && (
               <div>

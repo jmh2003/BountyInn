@@ -27,6 +27,7 @@ class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField()
     is_reviewed = models.BooleanField(default=False)
+    task_outcome = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.task_title

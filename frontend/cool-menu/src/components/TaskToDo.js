@@ -1,12 +1,10 @@
+
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ManageTask.css';
 import styled from 'styled-components';
 import Header from './Header';
-import { useNavigate } from 'react-router-dom';
-
-
-
 
 const TaskListContainer = styled.div`
   padding: 20px;
@@ -143,26 +141,18 @@ const ModalContent = styled.div`
   width: 100%;
 `;
 
-const EditTaskInput = styled.input`
+const EditTaskInput = styled.textarea`
   margin-bottom: 10px;
   padding: 10px;
   width: 100%;
+  height: 150px; /* Adjusted height */
   border: 1px solid #ccc;
   border-radius: 5px;
-`;
-
-const EditTaskTextarea = styled.textarea`
-  margin-bottom: 10px;
-  padding: 10px;
-  width: 100%;
-  height: 150px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  resize: vertical; /* Allow vertical resizing */
 `;
 
 const ManageTasks = () => {
   const username = localStorage.getItem('username');
-  const navigate = useNavigate(); // 定义 navigate 变量
 
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -172,15 +162,11 @@ const ManageTasks = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [editTask, setEditTask] = useState(null);
   const [editTaskData, setEditTaskData] = useState({});
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [userInfo, setUserInfo] = useState({});
-
-
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/tasks/?username=${username}`);
+        const response = await axios.get(`http://127.0.0.1:8000/api/tasks_for_assignee/?username=${username}`);
         setTasks(response.data);
         setLoading(false);
       } catch (err) {
@@ -198,83 +184,40 @@ const ManageTasks = () => {
       task.task_description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const tags = ['All',  ...new Set(tasks.map(task => task.task_tag).filter(tag => tag !== 'Else')), 'Else'];
+  const tags = ['All', ...new Set(tasks.map(task => task.task_tag).filter(tag => tag !== 'Else')), 'Else'];
 
   const handleEditClick = (task) => {
     setEditTask(task);
     setEditTaskData({
-      task_title: task.task_title,
-      task_description: task.task_description,
-      task_tag: task.task_tag,
-      reward_points: task.reward_points,
-      deadline: task.deadline,
+      task_outcome: task.task_outcome,
+      is_reviewed: task.is_reviewed,
     });
   };
 
   const handleEditSubmit = async () => {
-    const { task_title, task_description, task_tag, reward_points, deadline } = editTaskData;
+    const { task_outcome, is_reviewed } = editTaskData;
 
-    // 防呆设计：检查输入是否有效
-    if (!task_title || !task_description || !task_tag || reward_points <= 0 || !deadline) {
-        alert('Please fill out all fields correctly!');
-        return;
+    if (!task_outcome || task_outcome.trim() === '') {
+      alert('Task outcome cannot be empty.');
+      return;
+    }
+    if (is_reviewed) {
+      alert('Task has been reviewed. You cannot edit the outcome.');
+      return;
     }
 
     try {
-        await axios.put(`http://127.0.0.1:8000/api/change_task/`, {
-            task_id: editTask.task_id,  // 添加任务 ID
-            task_title,
-            task_description,
-            task_tag,
-            reward_points,
-            deadline,
-        });
-        setEditTask(null);
-        const response = await axios.get(`http://127.0.0.1:8000/api/tasks/?username=${username}`);
-        setTasks(response.data);
+      await axios.put(`http://127.0.0.1:8000/api/submit_task_outcome/`, {
+        task_id: editTask.task_id,
+        task_outcome: task_outcome,
+      });
+      setEditTask(null);
+      const response = await axios.get(`http://127.0.0.1:8000/api/tasks/?username=${username}`);
+      setTasks(response.data);
     } catch (error) {
-        console.error('Error updating task:', error);
+      console.error('Error updating task:', error);
     }
-};
-
-const [confirmDeleteTask, setConfirmDeleteTask] = useState(null);
-
-const handleDeleteClick = (task) => {
-  setConfirmDeleteTask(task);
-};
-
-const handleDeleteConfirm = async () => {
-  try {
-    await axios.patch(`http://127.0.0.1:8000/api/delete_task/`, {
-      task_id: confirmDeleteTask.task_id,
-    });
-    setTasks(tasks.map(task =>
-      task.task_id === confirmDeleteTask.task_id ? { ...task, task_status: 'aborted' } : task
-    ));
-    setConfirmDeleteTask(null);
-  } catch (error) {
-    console.error('Error updating task status:', error);
-  }
-};
-  if (loading) {
-    return <div>Loading tasks...</div>;
-  }
-
-  if (error) {
-    return <div>Error loading tasks: {error}</div>;
-  }
-
-  const handleUserClick = async (userId) => {
-  try {
-    const response = await axios.get(`http://127.0.0.1:8000/api/user/${userId}`);
-    setUserInfo(response.data);
-    setSelectedUser(userId);
-  } catch (error) {
-    console.error('Error fetching user info:', error);
-  }
-};
-
-
+  };
 
   return (
     <div>
@@ -285,7 +228,8 @@ const handleDeleteConfirm = async () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      {/* <FilterContainer>
+
+      <FilterContainer>
         {tags.map(tag => (
           <FilterButton
             key={tag}
@@ -295,24 +239,7 @@ const handleDeleteConfirm = async () => {
             {tag}
           </FilterButton>
         ))}
-      </FilterContainer> */}
-          <FilterContainer>
-            {tags.map(tag => (
-              <FilterButton
-                key={tag}
-                active={selectedTag === tag}
-                onClick={() => setSelectedTag(tag)}
-                tag={tag} // 传递标签名称以便在样式中使用
-              >
-                {tag}
-              </FilterButton>
-            ))}
-            <FilterButton onClick={() => navigate('/task-to-do')} tag="TaskToDo">Task To Do</FilterButton>
-            <FilterButton onClick={() => navigate('/task-to-review')} tag="TaskToReview">Task To Review</FilterButton>
-          </FilterContainer>
-
-      {/* <TaskButton onClick={handleTaskToDoClick}>Task To Do</TaskButton>
-      <TaskButton onClick={handleTaskToReviewClick}>Task To Review</TaskButton> */}
+      </FilterContainer>
 
       <TaskListContainer>
         {filteredTasks.length > 0 ? (
@@ -324,20 +251,9 @@ const handleDeleteConfirm = async () => {
                 <span><strong>Reward Points:</strong> {task.reward_points}</span>
                 <span><strong>Status:</strong> {task.task_status}</span>
                 <p><strong>Deadline:</strong> {new Date(task.deadline).toLocaleString()}</p>
-                <p>
-                  <strong>Candidates:</strong>
-                  {task.candidates && task.candidates.length > 0
-                    ? task.candidates.map(candidate => (
-                        <span key={candidate} onClick={() => handleUserClick(candidate)} style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline', marginRight: '5px' }}>
-                          {candidate}
-                        </span>
-                      ))
-                    : 'nobody'}
-                </p>
               </TaskMeta>
               <TaskButton onClick={() => setSelectedTask(task)}>View Details</TaskButton>
-              <TaskButton onClick={() => handleEditClick(task)}>Edit</TaskButton>
-              <TaskButton onClick={() => handleDeleteClick(task)}>Delete</TaskButton>
+              <TaskButton onClick={() => handleEditClick(task)}>Submit Task Outcome</TaskButton>
             </Task>
           ))
         ) : (
@@ -345,7 +261,7 @@ const handleDeleteConfirm = async () => {
         )}
       </TaskListContainer>
 
-      {/* 任务详情弹窗 */}
+      {/* Task Details Modal */}
       {selectedTask && (
         <ModalBackground onClick={() => setSelectedTask(null)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -363,65 +279,18 @@ const handleDeleteConfirm = async () => {
         </ModalBackground>
       )}
 
-      {/* 编辑任务弹窗 */}
+      {/* Edit Task Modal */}
       {editTask && (
         <ModalBackground onClick={() => setEditTask(null)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <h3>Edit Task</h3>
+            <h3>Submit Task Outcome</h3>
             <EditTaskInput
-              type="text"
-              value={editTaskData.task_title}
-              onChange={(e) => setEditTaskData({ ...editTaskData, task_title: e.target.value })}
-              placeholder="Task Title"
-            />
-            <EditTaskTextarea
-              value={editTaskData.task_description}
-              onChange={(e) => setEditTaskData({ ...editTaskData, task_description: e.target.value })}
-              placeholder="Task Description"
-            />
-            <EditTaskInput
-              type="text"
-              value={editTaskData.task_tag}
-              onChange={(e) => setEditTaskData({ ...editTaskData, task_tag: e.target.value })}
-              placeholder="Task Tag"
-            />
-            <EditTaskInput
-              type="number"
-              value={editTaskData.reward_points}
-              onChange={(e) => setEditTaskData({ ...editTaskData, reward_points: Number(e.target.value) })}
-              placeholder="Reward Points"
-            />
-            <EditTaskInput
-              type="datetime-local"
-              value={editTaskData.deadline}
-              onChange={(e) => setEditTaskData({ ...editTaskData, deadline: e.target.value })}
+              value={editTaskData.task_outcome}
+              onChange={(e) => setEditTaskData({ ...editTaskData, task_outcome: e.target.value })}
+              placeholder="Task Outcome"
             />
             <TaskButton onClick={handleEditSubmit}>Save Changes</TaskButton>
             <TaskButton onClick={() => setEditTask(null)}>Cancel</TaskButton>
-          </ModalContent>
-        </ModalBackground>
-      )}
-
-      {selectedUser && (
-          <ModalBackground onClick={() => setSelectedUser(null)}>
-            <ModalContent onClick={(e) => e.stopPropagation()}>
-              <h3>{userInfo.nickname}</h3>
-              <p><strong>Credit Score:</strong> {userInfo.credit_score}</p>
-              <p><strong>Ability Score:</strong> {userInfo.ability_score}</p>
-              <TaskButton onClick={() => setSelectedUser(null)}>Close</TaskButton>
-            </ModalContent>
-          </ModalBackground>
-        )}
-
-
-      {/* 删除确认弹窗 */}
-      {confirmDeleteTask && (
-        <ModalBackground onClick={() => setConfirmDeleteTask(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <h3>Confirm Deletion</h3>
-            <p>Are you sure you want to delete the task "{confirmDeleteTask.task_title}"?</p>
-            <TaskButton onClick={handleDeleteConfirm}>Yes, Delete</TaskButton>
-            <TaskButton onClick={() => setConfirmDeleteTask(null)}>Cancel</TaskButton>
           </ModalContent>
         </ModalBackground>
       )}

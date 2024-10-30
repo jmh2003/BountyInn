@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from .models import Task
 from users.models import User
+from leaderboard.models import Score
 from transactions.models import Candidate
 from django.utils.timezone import now
 from django.contrib.auth.decorators import login_required
@@ -73,6 +74,89 @@ def get_user_tasks(request):
         return JsonResponse(task_list, safe=False)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+
+def get_assignee_tasks(request):
+    username = request.GET.get('username')  # 从请求参数中获取 username
+    try:
+        user = User.objects.filter(nickname=username).first()  # 根据 username 查询 User
+        if user is None:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+        # 获取用户接取的任务 厉害！
+        tasks = Task.objects.filter(assignee_id=user.user_id).values(
+            'task_id', 'task_tag', 'task_title', 'task_description',
+            'task_status', 'reward_points', 'deadline', 'is_reviewed', 'task_outcome'
+        )
+
+        task_list = []
+        for task in tasks:
+            task_list.append(task)
+
+        return JsonResponse(task_list, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+def get_review_tasks(request):
+    username = request.GET.get('username')  # 从请求参数中获取 username
+    try:
+        user = User.objects.filter(nickname=username).first()  # 根据 username 查询 User
+        if user is None:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+        # 获取用户接取的任务 厉害！
+        tasks = Task.objects.filter( creator_id=user.user_id,
+                task_status='finished',
+                ).values(
+            'task_id', 'task_tag', 'task_title', 'task_description',
+            'task_status', 'reward_points', 'deadline', 'is_reviewed', 'task_outcome'
+        )
+
+
+        task_list = []
+        for task in tasks:
+            task_list.append(task)
+
+        return JsonResponse(task_list, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+# @api_view(['PUT'])
+# def submit_task_outcome(request):
+#     task_id = request.data.get('task_id')  # 从请求体获取 task_id
+#     try:
+#         task = Task.objects.get(task_id=task_id)  # 使用 task_id 获取任务
+#     except Task.DoesNotExist:
+#         return Response({'error': 'Task not found'}, status=404)
+
+#     task.task_outcome = request.data.get('task_outcome', task.task_outcome)
+#         # 更新任务信息
+#     if task.task_outcome==None:
+#         return Response({'error': 'Task outcome is None'}, status=404)
+#     task.task_status= 'finished'
+#     task.save()  # 保存更改
+#     return Response({'message': 'Task updated successfully'}, status=200)
+
+
+@api_view(['PUT'])
+def submit_task_outcome(request):
+    task_id = request.data.get('task_id')
+    task_outcome = request.data.get('task_outcome')
+
+    if not task_outcome or task_outcome.strip() == '':
+        return Response({'error': 'Task outcome cannot be empty.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        task = Task.objects.get(pk=task_id)
+        task.task_outcome = task_outcome
+        task.task_status = 'finished'
+        task.save()
+        return Response({'message': 'Task outcome updated successfully'}, status=status.HTTP_200_OK)
+    except Task.DoesNotExist:
+        return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['PUT'])
@@ -192,4 +276,71 @@ def get_all_tasks(request):
         return JsonResponse(task_list, safe=False)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-    
+
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+@api_view(['POST'])
+def submit_review(request):
+    print("hhh")
+    print(request.data)
+
+    task_id = request.data.get('task_id')
+    # reviewee_id = request.data.get('reviewee_id')
+    # reviewer_id = request.data.get('reviewer_id')
+    task = Task.objects.get(task_id=task_id)
+    reviewee_id = task.assignee_id
+    reviewer_id = task.creator_id
+    rating = request.data.get('rating')
+    comment = request.data.get('comment')
+
+    logger.debug(f"Received submit_review data: task_id={task_id}, reviewee_id={reviewee_id}, reviewer_id={reviewer_id}, rating={rating}, comment={comment}")
+
+    if not all([task_id, reviewee_id, reviewer_id, rating, comment.strip()]):
+        return Response({'error': '所有字段都是必填的。'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        print("before create")
+        score = Score.objects.create(
+            task_id=task,
+            reviewee_id=reviewee_id,
+            reviewer_id=reviewer_id,
+            rating=int(rating),
+            comment=comment.strip(),
+            is_finished=True
+        )
+        print("after create")
+        score.save()
+        task.is_reviewed = True
+        task.save()
+
+        # 减去发布者的奖励值
+         # filter
+        print("before get creator money")
+        creator =task.creator_id
+
+        # creator = User.objects.get(user_id=task.creator_id)
+        creator.remaining_points -= task.reward_points
+        creator.save()
+        print("after get")
+        # 将奖励值加到猎人的账户中
+        hunter=task.assignee_id
+        #hunter = User.objects.get(user_id=task.assignee_id)
+        hunter.remaining_points += task.reward_points
+        hunter.ability_score+=task.reward_points*rating
+        #更新算法，计算能力值，参考为能力值=能力值+奖励值*评分
+        hunter.credit_score+=rating-1
+        #如果是0分的话，信用将会减少
+        hunter.save()
+        print("hhhjiehsule")
+
+        return Response({'message': '评价提交成功。'}, status=status.HTTP_201_CREATED)
+    except Task.DoesNotExist:
+        return Response({'error': '任务未找到。'}, status=status.HTTP_404_NOT_FOUND)
+    except User.DoesNotExist:
+        return Response({'error': '用户未找到。'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f"Error submitting review: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

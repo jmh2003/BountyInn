@@ -9,6 +9,8 @@ import Login from './components/Login';
 import Register from './components/Register';
 import ManageTasks from './components/ManageTask';
 import './App.css';
+import TaskToDo from './components/TaskToDo';
+import TaskToReview from './components/TaskToReview';
 
 function App() {
 
@@ -23,6 +25,8 @@ function App() {
         <Route path='/receive' element={<ReceiveTask />} />
         <Route path='/register' element={<Register />} />
         <Route path='/manage' element={<ManageTasks />} />
+        <Route path="/task-to-do" element={<TaskToDo/>} />
+        <Route path="/task-to-review" element={<TaskToReview/>} />
         <Route path='/' element={<Login />} />
       </Routes>
     </div>

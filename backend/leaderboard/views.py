@@ -4,7 +4,13 @@ from django.shortcuts import render
 # users/views.py
 from django.shortcuts import render
 from .models import User,Score
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from users.models import User
 
+from .models import Score  # 假设你有一个存储排行榜条目的模型
+from django.db.models import F
+from rest_framework import status
 
 # 按用户ID排序的排行榜视图函数
 def leaderboard_by_id(request):
@@ -42,3 +48,65 @@ def update_score(User,Score):
     #无返回值
     pass
 
+
+@api_view(['POST'])
+def get_rankings(request):
+    """
+    获取排行榜数据，根据指定的排名种类（剩余积分、能力分数、信用分数）排序并返回。
+    """
+    rank_type = request.data.get('rankType')
+    if rank_type not in ['剩余积分', '能力分数', '信用分数']:
+        return Response({"error": "无效的排名种类"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # 根据不同的排名种类选择排序字段
+    if rank_type == '剩余积分':
+        order_field = '-remaining_points'
+    elif rank_type == '能力分数':
+        order_field = '-ability_score'
+    elif rank_type == '信用分数':
+        order_field = '-credit_score'
+
+    # 查询用户信息并按指定字段排序
+    users = User.objects.all().order_by(order_field)[:100]  # 取前100名用户
+    rankings = [
+        {
+            "user_id": user.user_id,
+            "name": user.nickname,
+            "score": getattr(user, order_field.lstrip('-'))
+        }
+        for user in users
+    ]
+
+    return Response({"rankings": rankings}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def get_user_rank(request):
+    """
+    获取用户个人排名，根据用户名和指定的排名种类返回用户的排名。
+    """
+    rank_type = request.data.get('rankType')
+    username = request.data.get('username')
+    print(username)
+    if not username or rank_type not in ['剩余积分', '能力分数', '信用分数']:
+        return Response({"error": "参数无效"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(nickname=username)
+    except User.DoesNotExist:
+        return Response({"error": "用户不存在"}, status=status.HTTP_404_NOT_FOUND)
+
+    # 根据排名种类确定排序字段
+    if rank_type == '剩余积分':
+        order_field = '-remaining_points'
+    elif rank_type == '能力分数':
+        order_field = '-ability_score'
+    elif rank_type == '信用分数':
+        order_field = '-credit_score'
+
+    # 获取所有用户的指定分数排序列表，并计算该用户的排名
+    users = User.objects.all().order_by(order_field)
+    rank = list(users).index(user) + 1  # 排名从1开始
+
+    return Response({"userRank": {"rank": rank, "score": getattr(user, order_field.lstrip('-'))}},
+                    status=status.HTTP_200_OK)
