@@ -83,8 +83,6 @@ def apply_for_task(request):
         data = json.loads(request.body)
         hunter_id = data.get('hunter_id')
         task_id = data.get('task_id')
-        print(task_id)
-        print(hunter_id)
         
         if not hunter_id or not task_id:
             return JsonResponse({'error': 'Hunter ID and Task ID are required'}, status=400)
