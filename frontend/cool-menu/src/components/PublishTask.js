@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './PublishTask.css';
-
+import Header from './Header'; // 引入 Header 组件
 function PublishTask() {
   const username = localStorage.getItem('username');
   const [taskTag, setTaskTag] = useState('Learning');
@@ -81,7 +81,7 @@ function PublishTask() {
 
   return (
     <div className="publish-task-page">
-      <Header username={username} />
+      {/* <Header username={username} /> */}
       <div className="publish-task-container">
         <div className="form-section">
           <h2>Add Task</h2>
