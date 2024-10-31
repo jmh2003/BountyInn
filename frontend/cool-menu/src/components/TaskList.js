@@ -143,7 +143,7 @@ const ModalContent = styled.div`
 `;
 
 const TaskList = () => {
-  const user_id = 1; // 假设获取当前登录用户的 ID
+  const user_id = localStorage.getItem('user_id');
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -152,6 +152,7 @@ const TaskList = () => {
   const [selectedTask, setSelectedTask] = useState(null); // 当前选中的任务
   const [applyMessage, setApplyMessage] = useState(''); // 任务申请反馈信息
   const [appliedTasks, setAppliedTasks] = useState([]); // 已申请的任务ID列表
+  const [creatorNicknames, setCreatorNicknames] = useState({}); // 任务创建者的昵称列表
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -168,6 +169,31 @@ const TaskList = () => {
     fetchTasks();
   }, []);
 
+  useEffect(() => {
+    // 对每个任务获取其creator的nickname
+    const fetchNicknames = async () => {
+      for (const task of tasks) {
+        if (!creatorNicknames[task.creator_id]) {
+          try {
+            const response = await axios.post('http://127.0.0.1:8000/api/find_user/', {
+              user_id: task.creator_id,
+            });
+            if (response.data.nickname) {
+              setCreatorNicknames((prev) => ({
+                ...prev,
+                [task.creator_id]: response.data.nickname,
+              }));
+            }
+          } catch (err) {
+            console.error(`Error fetching nickname for user ${task.creator_id}:`, err);
+          }
+        }
+      }
+    };if (tasks.length > 0) {
+      fetchNicknames();
+    }
+  }, [tasks]);
+
   const handleApply = async (taskId) => {
     try {
       if (!user_id) {
@@ -179,7 +205,6 @@ const TaskList = () => {
         hunter_id: user_id,
         task_id: taskId,
       });
-
       if (response.data.message) {
         setApplyMessage(response.data.message);
         setAppliedTasks([...appliedTasks, taskId]); // 任务申请成功后更新已申请任务的列表
@@ -259,6 +284,7 @@ const TaskList = () => {
                 <span><strong>Reward Points:</strong> {task.reward_points}</span>
                 <span><strong>Status:</strong> {task.task_status}</span>
                 <span><strong>Deadline:</strong> {new Date(task.deadline).toLocaleString()}</span>
+                <span><strong>Creator:</strong> {creatorNicknames[task.creator_id] || 'Loading...'}</span> {/* 显示creator的nickname */}
               </TaskMeta>
               <TaskButton
                 onClick={() => openTaskModal(task)}

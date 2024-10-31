@@ -12,6 +12,6 @@ urlpatterns = [
     path('user/<int:user_id>/', views.get_user_info, name='get_user_info'),
     path('tasks_for_assignee/', views.get_assignee_tasks, name='get_user_tasks'),
     path("submit_task_outcome/", views.submit_task_outcome, name="submit_task"),
-     path('tasks_for_review/', views.get_review_tasks, name='get_user_tasks'),
+    path('tasks_for_review/', views.get_review_tasks, name='get_user_tasks'),
     path('submit_review/', views.submit_review, name='submit_review'),
 ]
