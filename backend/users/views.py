@@ -231,3 +231,21 @@ def update_nickname(request):
         return JsonResponse({'message': '昵称已成功更新'}, status=200)
     except User.DoesNotExist:
         return JsonResponse({'error': '用户不存在'}, status=404)  # 用户不存在时返回404
+    
+@api_view(['POST'])
+def update_bio(request):
+    username = request.data.get('username')
+    new_bio = request.data.get('new_bio')
+
+    if not username or not new_bio:
+        return JsonResponse({'error': '用户名和新自我介绍不能为空'}, status=400)
+
+    try:
+        user = User.objects.get(nickname=username)  # 根据用户名查找用户
+        user.user_introduction = new_bio  # 更新用户自我介绍
+        user.save()  # 保存用户信息
+        
+        return JsonResponse({'message': '自我介绍已成功更新'}, status=200)
+    except User.DoesNotExist:
+        return JsonResponse({'error': '用户不存在'}, status=404)  # 用户不存在时返回404
+

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import TaskList from './components/TaskList';
 import PublishTask from './components/PublishTask';
 import Rankings from './components/Rankings_new';
@@ -11,11 +11,13 @@ import ManageTasks from './components/ManageTask';
 import './App.css';
 import TaskToDo from './components/TaskToDo';
 import TaskToReview from './components/TaskToReview';
+import Header from './components/Header';
 
 function App() {
-
+  const location = useLocation();
   return (
     <div className="App">
+      {location.pathname !== '/' && location.pathname !== '/register' && <Header />}
       <Routes>
         <Route path="/tasks" element={<TaskList />} />
         <Route path="/publish" element={<PublishTask />} />

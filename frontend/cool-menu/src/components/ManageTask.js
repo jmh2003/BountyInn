@@ -278,7 +278,6 @@ const handleDeleteConfirm = async () => {
 
   return (
     <div>
-      <Header />
       <SearchInput
         type="text"
         placeholder="Search tasks by title or description..."
@@ -336,14 +335,21 @@ const handleDeleteConfirm = async () => {
                 </p>
               </TaskMeta>
               <TaskButton onClick={() => setSelectedTask(task)}>View Details</TaskButton>
-              <TaskButton onClick={() => handleEditClick(task)}>Edit</TaskButton>
-              <TaskButton onClick={() => handleDeleteClick(task)}>Delete</TaskButton>
+
+              {/* 只有当任务状态为 "awaiting" 时显示 Edit 和 Delete 按钮 */}
+              {task.task_status === 'awaiting' && (
+                <>
+                  <TaskButton onClick={() => handleEditClick(task)}>Edit</TaskButton>
+                  <TaskButton onClick={() => handleDeleteClick(task)}>Delete</TaskButton>
+                </>
+              )}
             </Task>
           ))
         ) : (
           <p>No tasks found.</p>
         )}
       </TaskListContainer>
+
 
       {/* 任务详情弹窗 */}
       {selectedTask && (

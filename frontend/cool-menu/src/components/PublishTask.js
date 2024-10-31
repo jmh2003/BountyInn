@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './PublishTask.css';
-import Header from './Header';
 
 function PublishTask() {
   const username = localStorage.getItem('username');
-  const [taskTag, setTaskTag] = useState('learning');
+  const [taskTag, setTaskTag] = useState('Learning');
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
   const [rewardPoints, setRewardPoints] = useState('');
@@ -67,7 +66,7 @@ function PublishTask() {
         }
       });
       setSuccessMessage('任务创建成功！');
-      setTaskTag('learning');
+      setTaskTag('Learning');
       setTaskTitle('');
       setTaskDescription('');
       setRewardPoints('');
@@ -82,7 +81,6 @@ function PublishTask() {
 
   return (
     <div>
-      <Header />
       <div className="publish-task-container">
         <h2>Add Task</h2>
         {successMessage && <div className="success-message">{successMessage}</div>}
