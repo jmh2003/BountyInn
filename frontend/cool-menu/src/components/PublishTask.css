@@ -5,24 +5,48 @@ body {
 }
 
 .publish-task-container {
-  max-width: 600px;
-  margin: 40px auto; /* 上下间距更大 */
+  max-width: 800px; /* 增加最大宽度以适应两列 */
+  margin: 40px auto; /* 上下间距 */
   padding: 20px;
   background-color: #ffffff; /* 白色背景 */
   border-radius: 12px; /* 圆角 */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-  position: relative; /* 方便添加装饰 */
+  display: flex; /* 使用 flex 布局 */
+  flex-direction: row; /* 水平布局 */
+  gap: 20px; /* 列间距 */
+}
+
+.form-section {
+  flex: 1; /* 表单部分占据剩余空间 */
+}
+
+.info-section {
+  flex: 0 0 300px; /* 固定宽度的展示部分 */
+  padding: 10px; /* 减少内边距 */
+  background: linear-gradient(to bottom right, #f9f9f9, #e0e0e0); /* 渐变背景 */
+  border-radius: 12px; /* 圆角 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+  position: relative; /* 以便添加花纹装饰 */
+  color: #333; /* 设置文本颜色 */
 }
 
 h2 {
   text-align: center;
   color: #333;
-  font-size: 28px; /* 增大标题字体 */
-  margin-bottom: 20px; /* 增大底部间距 */
+  font-size: 26px; /* 调整标题字体大小 */
+  margin-bottom: 15px; /* 减少底部间距 */
+  font-family: 'Georgia', serif; /* 更优雅的字体 */
+}
+
+h3 {
+  text-align: center;
+  color: #007bff; /* 标题颜色 */
+  font-size: 22px; /* 调整标题字体大小 */
+  margin-bottom: 10px; /* 减少底部间距 */
 }
 
 .form-group {
-  margin-bottom: 20px; /* 增加间距 */
+  margin-bottom: 15px; /* 增加间距 */
 }
 
 label {
@@ -42,20 +66,6 @@ textarea {
   border: 1px solid #ccc; /* 较浅的边框颜色 */
   border-radius: 8px; /* 圆角 */
   box-sizing: border-box;
-  transition: border-color 0.3s, box-shadow 0.3s; /* 添加过渡效果 */
-}
-
-input[type="text"]:focus,
-input[type="number"]:focus,
-input[type="datetime-local"]:focus,
-select:focus,
-textarea:focus {
-  border-color: #007bff; /* 聚焦时改变边框颜色 */
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* 聚焦时添加阴影 */
-}
-
-textarea {
-  height: 120px; /* 调整文本域高度 */
 }
 
 button {
@@ -65,18 +75,8 @@ button {
   color: white;
   border: none;
   border-radius: 8px; /* 圆角 */
-  font-size: 16px; /* 增大按钮字体 */
+  font-size: 14px; /* 调整按钮字体大小 */
   cursor: pointer;
-  transition: background 0.3s, transform 0.2s; /* 添加过渡效果 */
-}
-
-button:hover {
-  background-color: #0056b3; /* 悬停时改变颜色 */
-  transform: translateY(-1px); /* 悬停时微微提升 */
-}
-
-button:disabled {
-  background-color: #cccccc; /* 禁用按钮颜色 */
 }
 
 .success-message {
@@ -97,4 +97,52 @@ button:disabled {
   background-color: #f8d7da; /* 背景色 */
   border: 1px solid #f5c6cb; /* 边框颜色 */
   border-radius: 8px; /* 圆角 */
+}
+
+p {
+  color: #555; /* 字体颜色 */
+  margin: 10px 0; /* 上下间距 */
+  font-size: 14px; /* 调整段落字体大小 */
+}
+
+/* 为右侧文本段落设置背景色和效果 */
+.info-section p {
+  margin-bottom: 10px; /* 增加段落间距 */
+  padding: 8px; /* 增加内边距 */
+  border-radius: 6px; /* 圆角 */
+  transition: background-color 0.3s ease; /* 动画效果 */
+}
+
+/* 为不同段落设置不同的背景色和效果 */
+.info-section p:nth-child(odd) {
+  background-color: #e7f1ff; /* 淡蓝色背景 */
+  color: #007bff; /* 蓝色字体 */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* 添加阴影 */
+}
+
+.info-section p:nth-child(even) {
+  background-color: #fff9c4; /* 淡黄色背景 */
+  color: #ff9800; /* 橙色字体 */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* 添加阴影 */
+}
+
+/* 悬停效果 */
+.info-section p:hover {
+  background-color: #d1e8ff; /* 悬停时背景颜色 */
+  transform: scale(1.02); /* 悬停时放大 */
+}
+
+/* 添加右侧装饰花纹 */
+.info-section::after {
+  content: '';
+  position: absolute;
+  bottom: -50px; /* 离底部20px */
+  left: 50%;
+  transform: translate(-50%, 0); /* 水平居中 */
+  width: 300px; /* 增加宽度 */
+  height: 200px; /* 增加高度 */
+  background-image: url('D:\Bounty\NIS3368\frontend\cool-menu\public\inn.jpg'); /* 替换为你的花纹图案 */
+  background-size: contain; /* 让图案保持纵横比 */
+  background-repeat: no-repeat; /* 防止图案重复 */
+  opacity: 0.7; /* 增加透明度，确保更明显 */
 }
