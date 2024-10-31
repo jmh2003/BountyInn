@@ -390,7 +390,6 @@ const ManageTasks = () => {
   //   }
   // };
 
-
   return (
     <div>
       <Header />
