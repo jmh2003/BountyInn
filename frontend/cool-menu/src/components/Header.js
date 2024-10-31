@@ -208,6 +208,13 @@ const Header = () => {
         >
           排行榜
         </MenuLink>
+        <MenuLink
+          to={'/forum'}
+          isSelected={selectedButton === 'forum'}
+          onClick={handleMenuClick('forum', '/forum')}
+        >
+          赏金论坛
+        </MenuLink>
       </Menu>
       <UserProfileImage
         src="/user.jpg"

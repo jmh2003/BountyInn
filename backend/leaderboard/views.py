@@ -72,7 +72,10 @@ def get_rankings(request):
         {
             "user_id": user.user_id,
             "name": user.nickname,
-            "score": getattr(user, order_field.lstrip('-'))
+            # "score": getattr(user, order_field.lstrip('-')),
+            "ability_score": user.ability_score,
+            "credit_score": user.credit_score,
+            "remaining_points": user.remaining_points,
         }
         for user in users
     ]

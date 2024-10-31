@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "transactions.apps.TransactionsConfig",
     'corsheaders',
+    "forum.apps.ForumConfig"
 ]
 
 MIDDLEWARE = [

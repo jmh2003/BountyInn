@@ -138,7 +138,9 @@ const Rankings = () => {
                 <th>序号</th>
                 <th>用户ID</th> {/* 新增用户ID列 */}
                 <th>名字</th>
-                <th>分数</th>
+                <th>能力分数</th>
+                <th>信用分数</th>
+                <th>剩余积分</th>
               </tr>
             </thead>
             <tbody>
@@ -147,7 +149,9 @@ const Rankings = () => {
                   <td>{index + 1}</td> {/* 显示排名序号 */}
                   <td>{rank.user_id}</td> {/* 显示用户ID */}
                   <td>{rank.name}</td>
-                  <td>{rank.score}</td>
+                  <td>{rank.ability_score}</td>
+                  <td>{rank.credit_score}</td>
+                  <td>{rank.remaining_points}</td>
                 </tr>
               ))}
             </tbody>
