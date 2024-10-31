@@ -27,6 +27,9 @@ def add_task(request):
             task_tag = data.get('task_tag')
             print(f"Received task_tag: {task_tag}")
 
+            if creator.remaining_points < data.get('reward_points'):
+                return JsonResponse({'error': 'Insufficient points'}, status=400)
+            
             # 创建任务
             task = Task(
                 task_tag=data.get('task_tag'),

@@ -252,7 +252,7 @@ function Forum() {
 
   return (
     <div>
-      <Header />
+      {/* <Header /> */}
       <Container>
         <h2>论坛</h2>
 
