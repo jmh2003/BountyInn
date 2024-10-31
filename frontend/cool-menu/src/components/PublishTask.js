@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 import './PublishTask.css';
 import Header from './Header';
 
 function PublishTask() {
-  const username = localStorage.getItem('username');
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const username = queryParams.get('username');
+
   const [taskTag, setTaskTag] = useState('learning');
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
@@ -81,66 +85,79 @@ function PublishTask() {
   };
 
   return (
-    <div>
-      <Header />
+    <div className="publish-task-page">
+      <Header username={username} />
       <div className="publish-task-container">
-        <h2>Add Task</h2>
-        {successMessage && <div className="success-message">{successMessage}</div>}
-        {errorMessage && <div className="error-message">{errorMessage}</div>}
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="task_tag">Task Tag:</label>
-          <select id="task_tag" value={taskTag} onChange={(e) => setTaskTag(e.target.value)}>
-            <option value="Learning">Learning</option>
-            <option value="Life">Life</option>
-            <option value="Job">Job</option>
-            <option value='Else'>Else</option>
-          </select><br />
+        <div className="form-section">
+          <h2>Add Task</h2>
+          {successMessage && <div className="success-message">{successMessage}</div>}
+          {errorMessage && <div className="error-message">{errorMessage}</div>}
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="task_tag">Task Tag:</label>
+              <select id="task_tag" value={taskTag} onChange={(e) => setTaskTag(e.target.value)}>
+                <option value="Learning">Learning</option>
+                <option value="Life">Life</option>
+                <option value="Job">Job</option>
+              </select>
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="task_title">Task Title:</label>
-            <input
-              type="text"
-              id="task_title"
-              value={taskTitle}
-              onChange={(e) => setTaskTitle(e.target.value)}
-              required
-            />
-          </div>
+            <div className="form-group">
+              <label htmlFor="task_title">Task Title:</label>
+              <input
+                type="text"
+                id="task_title"
+                value={taskTitle}
+                onChange={(e) => setTaskTitle(e.target.value)}
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="task_description">Task Description:</label>
-            <textarea
-              id="task_description"
-              value={taskDescription}
-              onChange={(e) => setTaskDescription(e.target.value)}
-              required
-            />
-          </div>
+            <div className="form-group">
+              <label htmlFor="task_description">Task Description:</label>
+              <textarea
+                id="task_description"
+                value={taskDescription}
+                onChange={(e) => setTaskDescription(e.target.value)}
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="reward_points">Reward Points:</label>
-            <input
-              type="number"
-              id="reward_points"
-              value={rewardPoints}
-              onChange={(e) => setRewardPoints(e.target.value)}
-              required
-            />
-          </div>
+            <div className="form-group">
+              <label htmlFor="reward_points">Reward Points:</label>
+              <input
+                type="number"
+                id="reward_points"
+                value={rewardPoints}
+                onChange={(e) => setRewardPoints(e.target.value)}
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="deadline">Deadline:</label>
-            <input
-              type="datetime-local"
-              id="deadline"
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              required
-            />
-          </div>
+            <div className="form-group">
+              <label htmlFor="deadline">Deadline:</label>
+              <input
+                type="datetime-local"
+                id="deadline"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                required
+              />
+            </div>
 
-          <button type="submit" disabled={loading}>{loading ? '提交中...' : 'Add Task'}</button>
-        </form>
+            <button type="submit" disabled={loading}>{loading ? '提交中...' : 'Add Task'}</button>
+          </form>
+        </div>
+
+        <div className="info-section">
+          <h3>我们的优势</h3>
+          <p><i className="fas fa-users"></i> 找专业人做专业事。</p>
+          <p><strong>多</strong>  海量人才 品类多</p>
+          <p><strong>快</strong>  高效服务 响应快</p>
+          <p><strong>好</strong>  品质保障 服务好</p>
+          <p><strong>省</strong>  平台交易 更省心</p>
+          <p>因为服务内容和需求不同，方案和报价不同，具体方案以实际沟通需求评估为准。</p>
+        </div>
       </div>
     </div>
   );
