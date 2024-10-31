@@ -121,7 +121,7 @@ const UserProfileImage = styled.img`
   margin-left: 100px; /* 添加左边距 */
 `;
 
-const Header = ({ username }) => {
+const Header = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [isMinimized, setIsMinimized] = useState(false);

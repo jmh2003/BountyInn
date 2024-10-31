@@ -67,7 +67,8 @@ def get_user_tasks(request):
             candidate_nicknames = [candidate['user_id__nickname'] for candidate in candidates]
 
             # 添加候选人信息到任务数据中
-            task['candidates'] = candidate_nicknames if candidate_nicknames else ['No candidates found']
+            # task['candidates'] = candidate_nicknames if candidate_nicknames else ['No candidates found']
+            task['candidates'] = candidate_nicknames
             task_list.append(task)
 
         return JsonResponse(task_list, safe=False)
@@ -104,7 +105,9 @@ def delete_task(request):
             task.task_status = 'aborted'  # 修改任务状态为 'aborted'
             task.save()
 
-            return JsonResponse({'message': 'Task status updated to aborted'}, status=200)
+            Candidate.objects.filter(task_id=task_id).delete()  # 删除所有候选人
+
+            return JsonResponse({'message': 'Task status updated to aborted and related candidate data deleted'}, status=200)
 
         except Task.DoesNotExist:
             return JsonResponse({'error': 'Task not found'}, status=404)

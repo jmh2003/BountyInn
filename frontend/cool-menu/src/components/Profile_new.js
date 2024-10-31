@@ -3,8 +3,6 @@ import styled from 'styled-components';
 import axios from 'axios';
 import Header from './Header';
 
-const username = localStorage.getItem('username');
-
 const PageContainer = styled.div`
   display: flex;
   padding: 20px;
@@ -122,7 +120,8 @@ const ModalContent = styled.div`
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 `;
 
-const UserInfo = ({ username }) => {
+const UserInfo = () => {
+  const [username, setUsername] = useState(localStorage.getItem('username'));
   const [userInfo, setUserInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('personalInfo');
@@ -134,7 +133,8 @@ const UserInfo = ({ username }) => {
 
   const fetchUserInfo = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/get-user-info/', { username });
+      const response = await axios.post('http://127.0.0.1:8000/api/get_user_info/', { 
+        username: username });
       setUserInfo(response.data.user);
       setLoading(false);
     } catch (error) {
@@ -146,7 +146,9 @@ const UserInfo = ({ username }) => {
   const updatePassword = async () => {
     if (newPassword === confirmPassword) {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/update-password/', { username, newPassword });
+        const response = await axios.post('http://127.0.0.1:8000/api/update_password/', { 
+          username: username, 
+          new_password: newPassword });
         setShowModal(false);
         setFeedback(response.data.message || "密码已更新");
       } catch (error) {
@@ -161,8 +163,12 @@ const UserInfo = ({ username }) => {
   const updateNickname = async () => {
     if (newNickname) {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/update-nickname/', { username, newNickname });
+        const response = await axios.post('http://127.0.0.1:8000/api/update_nickname/', { 
+          username: username, 
+          new_nickname: newNickname });
         setFeedback(response.data.message || "昵称已更新");
+        setUsername(newNickname);
+        localStorage.setItem('username', newNickname); // 确保 localStorage 同步更新
       } catch (error) {
         setFeedback("昵称更新失败");
         console.error("昵称更新失败", error);
@@ -182,7 +188,7 @@ const UserInfo = ({ username }) => {
 
   return (
     <div>
-      <Header username={username} />
+      <Header />
 
       <PageContainer>
         {/* 左侧选择栏 */}
