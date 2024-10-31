@@ -221,7 +221,6 @@ const ManageTasks = () => {
 
   return (
     <div>
-      <Header />
       <SearchInput
         type="text"
         placeholder="Search tasks by title or description..."

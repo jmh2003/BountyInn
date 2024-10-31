@@ -392,7 +392,6 @@ const ManageTasks = () => {
 
   return (
     <div>
-      <Header />
       <SearchInput
         type="text"
         placeholder="Search tasks by title or description..."
@@ -442,11 +441,15 @@ const ManageTasks = () => {
                   Number of Candidates: {task.candidates.length}
                 </CandidateButton>
               </TaskMeta>
-              <ButtonContainer>
-                <TaskButton onClick={() => setSelectedTask(task)}>View Details</TaskButton>
-                <TaskButton onClick={() => handleEditClick(task)}>Edit</TaskButton>
-                <TaskButton onClick={() => handleDeleteClick(task)}>Delete</TaskButton>
-              </ButtonContainer>
+              <TaskButton onClick={() => setSelectedTask(task)}>View Details</TaskButton>
+
+              {/* 只有当任务状态为 "awaiting" 时显示 Edit 和 Delete 按钮 */}
+              {task.task_status === 'awaiting' && (
+                <>
+                  <TaskButton onClick={() => handleEditClick(task)}>Edit</TaskButton>
+                  <TaskButton onClick={() => handleDeleteClick(task)}>Delete</TaskButton>
+                </>
+              )}
             </Task>
           ))
         ) : (

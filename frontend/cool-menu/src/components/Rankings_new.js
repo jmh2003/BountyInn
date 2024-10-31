@@ -128,7 +128,6 @@ const Rankings = () => {
 
   return (
     <div>
-      <Header /> 
       <Container>
         <TableContainer>
           <h2>排行榜</h2>

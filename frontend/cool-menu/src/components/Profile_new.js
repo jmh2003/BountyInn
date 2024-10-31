@@ -69,14 +69,14 @@ const Content = styled.div`
 const AvatarContainer = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* 左对齐 */
+  align-items: flex-start;
   margin-bottom: 20px;
 `;
 
 const Avatar = styled.img`
   width: 150px;
   height: 150px;
-  border-radius: 50%; /* 确保头像为圆形 */
+  border-radius: 50%;
   border: 3px solid #ddd;
 `;
 
@@ -125,10 +125,12 @@ const UserInfo = () => {
   const [userInfo, setUserInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('personalInfo');
-  const [showModal, setShowModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showBioModal, setShowBioModal] = useState(false); // 新增状态
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [newNickname, setNewNickname] = useState('');
+  const [newBio, setNewBio] = useState(''); // 新增状态
   const [feedback, setFeedback] = useState(null);
 
   const fetchUserInfo = async () => {
@@ -149,7 +151,7 @@ const UserInfo = () => {
         const response = await axios.post('http://127.0.0.1:8000/api/update_password/', { 
           username: username, 
           new_password: newPassword });
-        setShowModal(false);
+        setShowPasswordModal(false);
         setFeedback(response.data.message || "密码已更新");
       } catch (error) {
         setFeedback("密码更新失败");
@@ -168,13 +170,31 @@ const UserInfo = () => {
           new_nickname: newNickname });
         setFeedback(response.data.message || "昵称已更新");
         setUsername(newNickname);
-        localStorage.setItem('username', newNickname); // 确保 localStorage 同步更新
+        localStorage.setItem('username', newNickname);
       } catch (error) {
         setFeedback("昵称更新失败");
         console.error("昵称更新失败", error);
       }
     } else {
       setFeedback("请输入新昵称");
+    }
+  };
+
+  const updateBio = async () => { // 新增更新自我介绍的方法
+    if (newBio) {
+      try {
+        const response = await axios.post('http://127.0.0.1:8000/api/update_bio/', { 
+          username: username, 
+          new_bio: newBio });
+        setFeedback(response.data.message || "自我介绍已更新");
+        setUserInfo({ ...userInfo, user_introduction: newBio }); // 更新local状态
+        setShowBioModal(false); // 关闭模态框
+      } catch (error) {
+        setFeedback("自我介绍更新失败");
+        console.error("自我介绍更新失败", error);
+      }
+    } else {
+      setFeedback("请输入自我介绍");
     }
   };
 
@@ -188,8 +208,6 @@ const UserInfo = () => {
 
   return (
     <div>
-      <Header />
-
       <PageContainer>
         {/* 左侧选择栏 */}
         <Sidebar>
@@ -214,7 +232,8 @@ const UserInfo = () => {
               <SectionTitle>个人信息</SectionTitle>
               <AvatarContainer>
                 <Label>头像</Label>
-                <Avatar src={userInfo.avatar || '/default-avatar.png'} alt="用户头像" />
+                {/* 这里将 src 修改为 user.jpg 的路径 */}
+                <Avatar src="/user.jpg" alt="用户头像" />
               </AvatarContainer>
               <InfoSection>
                 <Label>昵称</Label>
@@ -243,6 +262,9 @@ const UserInfo = () => {
               <InfoSection>
                 <Label>自我介绍</Label>
                 <Content>{userInfo.user_introduction || '加载中...'}</Content>
+                <Button onClick={() => { setNewBio(userInfo.user_introduction); setShowBioModal(true); }}>
+                  编辑自我介绍
+                </Button>
               </InfoSection>
             </>
           ) : (
@@ -260,7 +282,7 @@ const UserInfo = () => {
               </InfoSection>
               <InfoSection>
                 <Label>用户密码</Label>
-                <Button onClick={() => setShowModal(true)}>修改密码</Button>
+                <Button onClick={() => setShowPasswordModal(true)}>修改密码</Button>
               </InfoSection>
             </>
           )}
@@ -268,7 +290,7 @@ const UserInfo = () => {
         </MainContainer>
 
         {/* 修改密码弹出框 */}
-        {showModal && (
+        {showPasswordModal && (
           <Modal>
             <ModalContent>
               <h3>修改密码</h3>
@@ -285,7 +307,26 @@ const UserInfo = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <Button onClick={updatePassword}>确认修改</Button>
-              <Button onClick={() => setShowModal(false)} style={{ marginTop: '10px', backgroundColor: '#e57373' }}>
+              <Button onClick={() => setShowPasswordModal(false)} style={{ marginTop: '10px', backgroundColor: '#e57373' }}>
+                取消
+              </Button>
+            </ModalContent>
+          </Modal>
+        )}
+
+        {/* 编辑自我介绍的弹出框 */}
+        {showBioModal && (
+          <Modal>
+            <ModalContent>
+              <h3>编辑自我介绍</h3>
+              <StyledInput
+                type="text"
+                placeholder="输入新的自我介绍"
+                value={newBio}
+                onChange={(e) => setNewBio(e.target.value)}
+              />
+              <Button onClick={updateBio}>确认修改</Button>
+              <Button onClick={() => setShowBioModal(false)} style={{ marginTop: '10px', backgroundColor: '#e57373' }}>
                 取消
               </Button>
             </ModalContent>
