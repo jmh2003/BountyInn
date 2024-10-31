@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
 import './PublishTask.css';
 import Header from './Header';
 
 function PublishTask() {
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const username = queryParams.get('username');
-
-  const [taskTag, setTaskTag] = useState('learning');
+  const username = localStorage.getItem('username');
+  const [taskTag, setTaskTag] = useState('Learning');
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
   const [rewardPoints, setRewardPoints] = useState('');
@@ -71,7 +67,7 @@ function PublishTask() {
         }
       });
       setSuccessMessage('任务创建成功！');
-      setTaskTag('learning');
+      setTaskTag('Learning');
       setTaskTitle('');
       setTaskDescription('');
       setRewardPoints('');
