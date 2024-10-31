@@ -9,4 +9,5 @@ urlpatterns = [
     path('get_user_info/', views.get_user_info, name='get_user_info'),
     path('update_password/', views.update_password, name='update_password'),
     path('update_nickname/', views.update_nickname, name='update_nickname'),
+    path('find_user/', views.find_user_by_id, name='find_user_by_id'),
 ]

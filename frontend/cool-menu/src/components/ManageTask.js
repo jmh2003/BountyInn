@@ -163,9 +163,70 @@ const ButtonContainer = styled.div`
   margin-top: 10px;
 `;
 
+const CandidateButton = styled.button`
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  width: 100%;
+  margin-top: 15px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    background-color: #218838;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    background-color: #1e7e34;
+  }
+`;
+
+
+const CandidateList = styled.ul`
+  list-style-type: none;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto; /* 滚动效果 */
+`;
+
+// Update CandidateItem to improve visual appearance on selection
+const CandidateItem = styled.li`
+  padding: 12px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 8px;
+  text-align: center;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    background-color: #f0f8ff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  }
+
+  &.selected {
+    background-color: #e0f7fa;
+    border-color: #007bff;
+    font-weight: bold;
+  }
+`;
+
+
+const PromptText = styled.p`
+  font-size: 16px;
+  color: #555;
+  text-align: center;
+  margin-bottom: 10px;
+`;
+
+
 const ManageTasks = () => {
   const username = localStorage.getItem('username');
-
+  const user_id = localStorage.getItem('user_id');
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -177,6 +238,54 @@ const ManageTasks = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userInfo, setUserInfo] = useState({});
   const [confirmDeleteTask, setConfirmDeleteTask] = useState(null); // 确认删除任务的状态
+  const [selectedCandidates, setSelectedCandidates] = useState([]); // 选中的候选人
+  const [showCandidateModal, setShowCandidateModal] = useState(false); // 显示候选人弹窗
+  
+
+  const handleCandidateClick = (task) => {
+    const candidatesWithTaskId = task.candidates.map(candidate => ({
+      name: candidate,
+      task_id: task.task_id,
+    }));
+    setSelectedCandidates(candidatesWithTaskId);
+    setShowCandidateModal(true);
+  };
+
+  const handleCandidateSelect = async (task_id, candidate) => {
+    setSelectedCandidates((prev) =>
+      prev.map((item) =>
+        item.name === candidate
+          ? { ...item, isSelected: true }
+          : { ...item, isSelected: false }
+      )
+    );
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/transactions/assign_task/', {
+        creator_id: user_id,
+        task_id: task_id,
+        hunter_name: candidate,
+      });
+  
+      if (response.data.message) {
+        alert(response.data.message);
+        // Update the task status in the frontend
+        setTasks(tasks.map(task => 
+          task.task_id === task_id ? { ...task, task_status: 'ongoing' } : task
+        ));
+        setShowCandidateModal(false);
+      } else if (response.data.error) {
+        alert(`Error: ${response.data.error}`); // 显示后端返回的error信息
+      }
+    } catch (error) {
+      // 检查错误响应是否包含详细的错误信息
+      if (error.response && error.response.data && error.response.data.error) {
+        alert(`Error: ${error.response.data.error}`);
+      } else {
+        alert('Failed to assign task');
+      }
+    }
+  };
+  
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -267,15 +376,15 @@ const ManageTasks = () => {
     return <div>Error loading tasks: {error}</div>;
   }
 
-  const handleUserClick = async (userId) => {
-    try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/user/${userId}`);
-      setUserInfo(response.data);
-      setSelectedUser(userId);
-    } catch (error) {
-      console.error('Error fetching user info:', error);
-    }
-  };
+  // const handleUserClick = async (userId) => {
+  //   try {
+  //     const response = await axios.get(`http://127.0.0.1:8000/api/user/${userId}`);
+  //     setUserInfo(response.data);
+  //     setSelectedUser(userId);
+  //   } catch (error) {
+  //     console.error('Error fetching user info:', error);
+  //   }
+  // };
 
   return (
     <div>
@@ -307,16 +416,9 @@ const ManageTasks = () => {
                 <span><strong>Reward Points:</strong> {task.reward_points}</span>
                 <span><strong>Status:</strong> {task.task_status}</span>
                 <p><strong>Deadline:</strong> {new Date(task.deadline).toLocaleString()}</p>
-                <p>
-                  <strong>Candidates:</strong>
-                  {task.candidates && task.candidates.length > 0
-                    ? task.candidates.map(candidate => (
-                        <span key={candidate} onClick={() => handleUserClick(candidate)} style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline', marginRight: '5px' }}>
-                          {candidate}
-                        </span>
-                      ))
-                    : 'nobody'}
-                </p>
+                <CandidateButton onClick={() => handleCandidateClick(task)}>
+                  Number of Candidates: {task.candidates.length}
+                </CandidateButton>
               </TaskMeta>
               <ButtonContainer>
                 <TaskButton onClick={() => setSelectedTask(task)}>View Details</TaskButton>
@@ -329,7 +431,33 @@ const ManageTasks = () => {
           <p>No tasks found.</p>
         )}
       </TaskListContainer>
-
+      
+      {/* 候选者列表弹窗 */}
+      {showCandidateModal && (
+        <ModalBackground onClick={() => setShowCandidateModal(false)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <h3>Candidates</h3>
+            <PromptText>Please select one candidate:</PromptText>
+            <CandidateList>
+              {selectedCandidates.length > 0 ? (
+                selectedCandidates.map(({ name, task_id, isSelected }) => (
+                  <CandidateItem
+                    key={name}
+                    className={isSelected ? "selected" : ""}
+                    onClick={() => handleCandidateSelect(task_id, name)}
+                  >
+                    {name}
+                  </CandidateItem>
+                ))
+              ) : (
+                <p>No candidates</p>
+              )}
+            </CandidateList>
+            <TaskButton onClick={() => setShowCandidateModal(false)}>Close</TaskButton>
+          </ModalContent>
+        </ModalBackground>
+      )}
+      
       {/* 任务详情弹窗 */}
       {selectedTask && (
         <ModalBackground onClick={() => setSelectedTask(null)}>

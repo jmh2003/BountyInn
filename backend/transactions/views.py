@@ -48,22 +48,18 @@ def transaction(request):
 @csrf_exempt
 def assign_task(request):
     if request.method == 'POST':
-        creator_id = request.POST.get('creator_id')
-        task_id = request.POST.get('task_id')
-        hunter_id = request.POST.get('hunter_id')
-        
-        if not creator_id or not task_id or not hunter_id:
-            return JsonResponse({'error': 'Creator ID, Task ID, and Hunter ID are required'}, status=400)
-
         try:
+            data = json.loads(request.body)
+            creator_id = data.get('creator_id')
+            task_id = data.get('task_id')
+            hunter_name = data.get('hunter_name')
             task = Task.objects.get(task_id=task_id)
-
-            # 检查任务是否是 "awaiting" 状态
+            
             if task.task_status != 'awaiting':
                 return JsonResponse({'error': 'Task is already assigned or not available'}, status=400)
 
             if task.creator_id.user_id == int(creator_id):
-                task.assignee_id = User.objects.get(user_id=hunter_id)
+                task.assignee_id = User.objects.get(nickname=hunter_name)
                 task.task_status = 'ongoing'
                 task.save()
                 return JsonResponse({'message': 'Task assigned successfully'})
@@ -74,6 +70,9 @@ def assign_task(request):
             return JsonResponse({'error': 'Task does not exist'}, status=404)
         except User.DoesNotExist:
             return JsonResponse({'error': 'Hunter does not exist'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
@@ -84,6 +83,8 @@ def apply_for_task(request):
         data = json.loads(request.body)
         hunter_id = data.get('hunter_id')
         task_id = data.get('task_id')
+        print(task_id)
+        print(hunter_id)
         
         if not hunter_id or not task_id:
             return JsonResponse({'error': 'Hunter ID and Task ID are required'}, status=400)
@@ -169,6 +170,7 @@ def check_task_applied(request):
 
             # 检查是否已申请
             if Candidate.objects.filter(task_id=task, user_id=hunter_id).exists():
+                # print(task, hunter_id)
                 return JsonResponse({'applied': True})
             else:
                 return JsonResponse({'applied': False})

@@ -67,7 +67,8 @@ def get_user_tasks(request):
             candidate_nicknames = [candidate['user_id__nickname'] for candidate in candidates]
 
             # 添加候选人信息到任务数据中
-            task['candidates'] = candidate_nicknames if candidate_nicknames else ['No candidates found']
+            # task['candidates'] = candidate_nicknames if candidate_nicknames else ['No candidates found']
+            task['candidates'] = candidate_nicknames
             task_list.append(task)
 
         return JsonResponse(task_list, safe=False)
