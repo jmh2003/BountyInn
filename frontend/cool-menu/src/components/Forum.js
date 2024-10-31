@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
@@ -9,27 +7,21 @@ import Header from './Header';
 
 const Container = styled.div`
   padding: 20px;
-  max-width: 800px;
+  max-width: 800px; /* 保持原有的最大宽度 */
   margin: auto;
 `;
 
 const CommentList = styled.div`
   margin-top: 20px;
+  display: flex;
+  flex-direction: column; /* 单列布局 */
+  gap: 20px; /* 每个评论框之间的间隔 */
 `;
-
-// const CommentItem = styled.div`
-//   border-bottom: 1px solid #ddd;
-//   padding: 10px 0;
-// `;
-
-
-
 
 const CommentItem = styled.div`
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 15px;
-  margin-bottom: 15px;
   background-color: #fff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 `;
@@ -39,7 +31,6 @@ const CommentHeader = styled.div`
   justify-content: space-between;
   align-items: flex-start;
 `;
-
 
 const Nickname = styled.p`
   font-weight: bold;
@@ -58,18 +49,33 @@ const Content = styled.p`
   text-align: left;
 `;
 
+const SearchInput = styled.input`
+  margin-bottom: 20px;
+  margin-top: 30px; /* 将搜索框向下移动 */
+  padding: 12px 20px;
+  width: 100%;
+  max-width: 600px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 30px; /* 圆角 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+  outline: none;
+  transition: all 0.3s ease; /* 过渡效果 */
+
+  &:focus {
+    border-color: #007bff; /* 聚焦时改变边框颜色 */
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2); /* 聚焦时加大阴影 */
+  }
+
+  &::placeholder {
+    color: #aaa; /* 占位符颜色 */
+  }
+`;
+
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
-`;
-
-const Input = styled.input`
-  padding: 10px;
-  margin-bottom: 10px;
-  flex: 1;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  margin-top: 30px;
 `;
 
 const TextArea = styled.textarea`
@@ -108,60 +114,16 @@ const Button = styled.button`
   }
 `;
 
-const FilterContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-`;
-
-const SearchForm = styled.form`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  max-width: 800px;
-
-  @media (max-width: 600px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-`;
-
-const SearchInput = styled.input`
-  flex: 1;
-  padding: 12px 20px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 30px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  outline: none;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: #007bff;
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
-  }
-
-  &::placeholder {
-    color: #aaa;
-  }
-
-  @media (max-width: 600px) {
-    width: 100%;
-    max-width: none;
-  }
-`;
-
 // 主组件
 
 function Forum() {
   const [comments, setComments] = useState([]);
+  const [filteredComments, setFilteredComments] = useState([]);
   const [newComment, setNewComment] = useState({ comment_content: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const username = localStorage.getItem('username') || '';
-  const [filter, setFilter] = useState({ search: '', start_date: '', end_date: '' });
-  const [debounceTimer, setDebounceTimer] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchComments();
@@ -169,27 +131,23 @@ function Forum() {
   }, []);
 
   useEffect(() => {
-    if (debounceTimer) clearTimeout(debounceTimer);
-    const timer = setTimeout(() => {
-      fetchComments();
-    }, 500); // 延迟500ms执行
-    setDebounceTimer(timer);
-    return () => clearTimeout(timer);
+    applyFilters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter.search, filter.start_date, filter.end_date]);
+  }, [searchTerm, comments]);
 
   /**
-   * 根据当前的过滤条件获取评论
+   * 获取评论数据
    */
   const fetchComments = async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (filter.search) params.search = filter.search;
-      if (filter.start_date) params.start_date = filter.start_date;
-      if (filter.end_date) params.end_date = filter.end_date;
+      // 如果后端支持根据搜索词过滤，可以在此处传递参数
+      // const params = {};
+      // if (searchTerm) params.search = searchTerm;
+      // const res = await axios.get('http://127.0.0.1:8000/api/comments/', { params });
 
-      const res = await axios.get('http://127.0.0.1:8000/api/comments/', { params });
+      // 假设后端不支持搜索过滤，则获取所有评论并在前端过滤
+      const res = await axios.get('http://127.0.0.1:8000/api/comments/');
       setComments(res.data);
       setLoading(false);
     } catch (err) {
@@ -197,6 +155,23 @@ function Forum() {
       setError("无法获取评论");
       setLoading(false);
     }
+  };
+
+  /**
+   * 应用搜索过滤
+   */
+  const applyFilters = () => {
+    if (!searchTerm) {
+      setFilteredComments(comments);
+      return;
+    }
+
+    const lowerSearch = searchTerm.toLowerCase();
+    const filtered = comments.filter(comment =>
+      comment.comment_nickname.toLowerCase().includes(lowerSearch) ||
+      comment.comment_content.toLowerCase().includes(lowerSearch)
+    );
+    setFilteredComments(filtered);
   };
 
   /**
@@ -228,59 +203,32 @@ function Forum() {
   };
 
   /**
-   * 处理过滤条件的变化
+   * 处理搜索输入的变化
    */
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilter(prevFilter => ({
-      ...prevFilter,
-      [name]: value,
-    }));
-  };
-
-  /**
-   * 重置过滤条件，显示所有评论
-   */
-  const handleResetFilter = () => {
-    setFilter({ search: '', start_date: '', end_date: '' });
-    setLoading(true);
-    fetchComments();
+  const handleSearchChange = (e) => {
+    const { value } = e.target;
+    setSearchTerm(value);
   };
 
   if (loading) return <p>加载中...</p>;
   if (error) return <p>{error}</p>;
 
   return (
-    <div>
-      {/* <Header /> */}
-      <Container>
-        <h2>论坛</h2>
+    <Container>
+      <h2>论坛</h2>
 
-        {/* 查询过滤部分 */}
-        <FilterContainer>
-          <SearchForm>
-            <SearchInput
-              type="text"
-              name="search"
-              placeholder="按用户名或评论内容查询"
-              value={filter.search}
-              onChange={handleFilterChange}
-            />
-           
-            {/* 实时搜索无需提交按钮，可以保留或移除 */}
-            {/* <Button type="submit">查询</Button> */}
-            
-            {/* 保留重置按钮 */}
-            <Button type="button" onClick={handleResetFilter}>
-              重置查询
-            </Button>
-          </SearchForm>
-        </FilterContainer>
+      {/* 查询部分 */}
+      <SearchInput
+        type="text"
+        placeholder="按用户名或评论内容查询..."
+        value={searchTerm}
+        onChange={handleSearchChange}
+      />
 
-
-        {/* 评论列表部分 */}
-       <CommentList>
-          {comments.map((comment) => (
+      {/* 评论列表部分 */}
+      <CommentList>
+        {filteredComments.length > 0 ? (
+          filteredComments.map((comment) => (
             <CommentItem key={comment.comment_id}>
               <CommentHeader>
                 <Nickname>{comment.comment_nickname}</Nickname>
@@ -288,22 +236,23 @@ function Forum() {
               </CommentHeader>
               <Content>{comment.comment_content}</Content>
             </CommentItem>
-          ))}
-        </CommentList>
+          ))
+        ) : (
+          <p>没有找到评论。</p>
+        )}
+      </CommentList>
 
-        {/* 发布评论部分 */}
-        <Form onSubmit={handleSubmit}>
-
-          <TextArea
-            placeholder="留言内容"
-            value={newComment.comment_content}
-            onChange={(e) => setNewComment({ ...newComment, comment_content: e.target.value })}
-            required
-          ></TextArea>
-          <Button type="submit">发布留言</Button>
-        </Form>
-      </Container>
-    </div>
+      {/* 发布评论部分 */}
+      <Form onSubmit={handleSubmit}>
+        <TextArea
+          placeholder="留言内容"
+          value={newComment.comment_content}
+          onChange={(e) => setNewComment({ ...newComment, comment_content: e.target.value })}
+          required
+        ></TextArea>
+        <Button type="submit">发布留言</Button>
+      </Form>
+    </Container>
   );
 }
 

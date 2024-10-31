@@ -229,7 +229,6 @@ const PromptText = styled.p`
 const ManageTasks = () => {
   const username = localStorage.getItem('username');
   const navigate = useNavigate(); // 定义 navigate 变量
-
   const user_id = localStorage.getItem('user_id');
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -441,6 +440,7 @@ const ManageTasks = () => {
                   Number of Candidates: {task.candidates.length}
                 </CandidateButton>
               </TaskMeta>
+              <ButtonContainer>
               <TaskButton onClick={() => setSelectedTask(task)}>View Details</TaskButton>
 
               {/* 只有当任务状态为 "awaiting" 时显示 Edit 和 Delete 按钮 */}
@@ -450,6 +450,7 @@ const ManageTasks = () => {
                   <TaskButton onClick={() => handleDeleteClick(task)}>Delete</TaskButton>
                 </>
               )}
+              </ButtonContainer>
             </Task>
           ))
         ) : (
