@@ -110,7 +110,7 @@ function Login() {
       });
       console.log(response.data);
       localStorage.setItem('username', response.data.username);
-      localStorage.setItem('user_id', response.user_id);
+      localStorage.setItem('user_id', response.data.user_id);
       navigate('/tasks'); // 登录成功后跳转到 /homepage
     } catch (error) {
       console.error(error);

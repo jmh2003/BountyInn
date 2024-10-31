@@ -132,22 +132,21 @@ def update_user(request):
 #     pass
 
 
-def find_user_by_id(user_id):
+@api_view(['POST'])
+def find_user_by_id(request):
+    user_id = request.data.get('user_id')
+    if not user_id:
+        return JsonResponse({'error': 'No user_id provided'}, status=400)
     try:
         user = User.objects.get(user_id=user_id)
-        # user_data = {
-        #     'user_id': user.user_id,
-        #     'nickname': user.nickname,
-        #     'user_introduction': user.user_introduction,
-        #     'credit_score': user.credit_score,
-        #     'remaining_points': user.remaining_points,
-        #     'ability_score': user.ability_score
-        # }
-        # return JsonResponse({'user': user_data})
-        return user
+        user_data = {
+            'nickname': user.nickname,
+            'credit_score': user.credit_score,
+            'ability_score': user.ability_score,
+        }
+        return JsonResponse(user_data)
     except User.DoesNotExist:
-        return None
-        # return JsonResponse({'error': 'User not found'}, status=404)
+        return JsonResponse({'error': 'User not found'}, status=404)
 
 # #这个需要提前确认好，输入用户的密码等，进行删除操作，重复确认
 # def delete_user(user_id):
