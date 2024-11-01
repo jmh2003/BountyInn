@@ -147,7 +147,7 @@ function Forum() {
       // const res = await axios.get('http://127.0.0.1:8000/api/comments/', { params });
 
       // 假设后端不支持搜索过滤，则获取所有评论并在前端过滤
-      const res = await axios.get('http://127.0.0.1:8000/api/comments/');
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/comments/`);
       setComments(res.data);
       setLoading(false);
     } catch (err) {
@@ -192,7 +192,7 @@ function Forum() {
     };
 
     try {
-      await axios.post('http://127.0.0.1:8000/api/comments/', commentData);
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/comments/`, commentData);
       setNewComment({ comment_content: '' });
       fetchComments(); // 刷新评论列表
       setError(null);

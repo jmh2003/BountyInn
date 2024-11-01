@@ -105,7 +105,7 @@ const Rankings = () => {
   // 获取排名数据
   const fetchRankings = async (type) => {
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/get-rankings/', { rankType: type });
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/get-rankings/`, { rankType: type });
       setRankings(response.data.rankings);
     } catch (error) {
       console.error("获取排名数据失败", error);
@@ -115,7 +115,7 @@ const Rankings = () => {
   // 获取用户个人排名
   const fetchUserRank = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/get-user-rank/', { rankType, username });
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/get-user-rank/`, { rankType, username });
       setUserRank(response.data.userRank);
     } catch (error) {
       console.error("获取用户排名失败", error);

@@ -36,7 +36,7 @@ function PublishTask() {
 
     const points = Number(rewardPoints);
     if (points < 0) {
-      alert('回报点数不能为负数，请输入有效的回报点数。');
+      alert('奖励积分不能为负数，请输入有效的奖励积分。');
       return;
     }
 
@@ -53,7 +53,7 @@ function PublishTask() {
     setErrorMessage('');
 
     try {
-      await axios.post('http://127.0.0.1:8000/api/add_task/', {
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/add_task/`, {
         task_tag: taskTag,
         task_title: taskTitle,
         task_description: taskDescription,
@@ -84,21 +84,22 @@ function PublishTask() {
       {/* <Header username={username} /> */}
       <div className="publish-task-container">
         <div className="form-section">
-          <h2>Add Task</h2>
+          <h2>发布任务</h2>
           {successMessage && <div className="success-message">{successMessage}</div>}
           {errorMessage && <div className="error-message">{errorMessage}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="task_tag">Task Tag:</label>
+              <label htmlFor="task_tag">任务标签</label>
               <select id="task_tag" value={taskTag} onChange={(e) => setTaskTag(e.target.value)}>
-                <option value="Learning">Learning</option>
-                <option value="Life">Life</option>
-                <option value="Job">Job</option>
+                <option value="Learning">学习</option>
+                <option value="Life">生活</option>
+                <option value="Job">工作</option>
+                <option value="Else">其他</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label htmlFor="task_title">Task Title:</label>
+              <label htmlFor="task_title">任务标题:</label>
               <input
                 type="text"
                 id="task_title"
@@ -109,7 +110,7 @@ function PublishTask() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="task_description">Task Description:</label>
+              <label htmlFor="task_description">任务描述:</label>
               <textarea
                 id="task_description"
                 value={taskDescription}
@@ -119,18 +120,19 @@ function PublishTask() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="reward_points">Reward Points:</label>
+              <label htmlFor="reward_points">奖金（积分数）:</label>
               <input
                 type="number"
                 id="reward_points"
                 value={rewardPoints}
                 onChange={(e) => setRewardPoints(e.target.value)}
+                placeholder="请输入奖励积分数"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="deadline">Deadline:</label>
+              <label htmlFor="deadline">任务截止日期:</label>
               <input
                 type="datetime-local"
                 id="deadline"
@@ -140,7 +142,7 @@ function PublishTask() {
               />
             </div>
 
-            <button type="submit" disabled={loading}>{loading ? '提交中...' : 'Add Task'}</button>
+            <button type="submit" disabled={loading}>{loading ? '提交中...' : '提交'}</button>
           </form>
         </div>
 

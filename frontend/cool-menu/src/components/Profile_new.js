@@ -135,7 +135,7 @@ const UserInfo = () => {
 
   const fetchUserInfo = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/get_user_info/', { 
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/get_user_info/`, { 
         username: username });
       setUserInfo(response.data.user);
       setLoading(false);
@@ -148,7 +148,7 @@ const UserInfo = () => {
   const updatePassword = async () => {
     if (newPassword === confirmPassword) {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/update_password/', { 
+        const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/update_password/`, { 
           username: username, 
           new_password: newPassword });
         setShowPasswordModal(false);
@@ -165,7 +165,7 @@ const UserInfo = () => {
   const updateNickname = async () => {
     if (newNickname) {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/update_nickname/', { 
+        const response = await axios.post( `${process.env.REACT_APP_API_BASE_URL}/api/update_nickname/`, { 
           username: username, 
           new_nickname: newNickname });
         setFeedback(response.data.message || "昵称已更新");
@@ -183,7 +183,7 @@ const UserInfo = () => {
   const updateBio = async () => { // 新增更新自我介绍的方法
     if (newBio) {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/update_bio/', { 
+        const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/update_bio/`, { 
           username: username, 
           new_bio: newBio });
         setFeedback(response.data.message || "自我介绍已更新");

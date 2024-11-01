@@ -162,6 +162,23 @@ const FilterButton = styled.button`
 `;
 
 
+const taskStatusMap = {
+  "awaiting": '待接取',
+  'ongoing': '进行中',
+  'finished': '已完成',
+  'aborted': '已废弃',
+  // 添加其他状态映射
+};
+
+const taskTagMap = {
+  'All': '全部',
+  'Learning': '学习',
+  'Job': '工作',
+  'Life': '生活',
+  'Else': '其他',
+  // 添加其他标签映射
+};
+
 const ManageTasks = () => {
   const username = localStorage.getItem('username');
 
@@ -179,7 +196,7 @@ const ManageTasks = () => {
     useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/tasks_for_review/?username=${username}`);
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/tasks_for_review/?username=${username}`);
         const validTasks = response.data.filter((task) => task.task_status);
         setTasks(validTasks);
         setLoading(false);
@@ -239,7 +256,7 @@ const ManageTasks = () => {
     console.log('Submitting review with payload:', payload); // 调试用
   
     try {
-      const response = await axios.post(`http://127.0.0.1:8000/api/submit_review/`, payload);
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/submit_review/`, payload);
       console.log('Review submitted successfully:', response.data);
       setEditTask(null);
       const updatedTasks = tasks.filter(task => task.task_id !== editTask.task_id);
@@ -276,7 +293,7 @@ const ManageTasks = () => {
             active={selectedTag === tag}
             onClick={() => setSelectedTag(tag)}
           >
-            {tag}
+            {taskTagMap[tag]}
           </FilterButton>
         ))}
       </FilterContainer>
@@ -287,17 +304,17 @@ const ManageTasks = () => {
             <Task key={task.task_id} tag={task.task_tag}>
               <TaskTitle>{task.task_title}</TaskTitle>
               <TaskMeta>
-                <span><strong>Tag:</strong> {task.task_tag}</span>
-                <span><strong>Reward Points:</strong> {task.reward_points}</span>
-                <span><strong>Status:</strong> {task.task_status}</span>
-                <p><strong>Deadline:</strong> {new Date(task.deadline).toLocaleString()}</p>
+                <span><strong>任务标签:</strong> {taskTagMap[task.task_tag]}</span>
+                <span><strong>奖励积分:</strong> {task.reward_points}</span>
+                <span><strong>任务状态:</strong> {taskStatusMap[task.task_status]}</span>
+                <p><strong>截止日期:</strong> {new Date(task.deadline).toLocaleString()}</p>
               </TaskMeta>
-              <TaskButton onClick={() => setSelectedTask(task)}>View Details</TaskButton>
-              <TaskButton onClick={() => handleEditClick(task)}>Submit Task review</TaskButton>
+              <TaskButton onClick={() => setSelectedTask(task)}>查看详情</TaskButton>
+              <TaskButton onClick={() => handleEditClick(task)}>提交评论</TaskButton>
             </Task>
           ))
         ) : (
-          <p>No tasks found.</p>
+          <p>无任务.</p>
         )}
       </TaskListContainer>
 
@@ -308,13 +325,13 @@ const ManageTasks = () => {
             <h3>{selectedTask.task_title}</h3>
             <p>{selectedTask.task_description}</p>
             <TaskMeta>
-              <span><strong>Tag:</strong> {selectedTask.task_tag}</span>
-              <span><strong>Reward Points:</strong> {selectedTask.reward_points}</span>
-              <span><strong>Status:</strong> {selectedTask.task_status}</span>
-              <span><strong>Deadline:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
-              <p><strong>Candidates:</strong> {selectedTask.candidates && selectedTask.candidates.length > 0 ? selectedTask.candidates.join(', ') : 'nobody'}</p>
+              <span><strong>任务标签:</strong> {taskTagMap[selectedTask.task_tag]}</span>
+              <span><strong>奖励积分:</strong> {selectedTask.reward_points}</span>
+              <span><strong>任务状态:</strong> {taskStatusMap[selectedTask.task_status]}</span>
+              <span><strong>截止日期:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
+              <p><strong>候选猎人:</strong> {selectedTask.candidates && selectedTask.candidates.length > 0 ? selectedTask.candidates.join(', ') : 'nobody'}</p>
             </TaskMeta>
-            <TaskButton onClick={() => setSelectedTask(null)}>Close</TaskButton>
+            <TaskButton onClick={() => setSelectedTask(null)}>关闭</TaskButton>
           </ModalContent>
         </ModalBackground>
       )}

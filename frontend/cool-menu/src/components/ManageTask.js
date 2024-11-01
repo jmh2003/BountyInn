@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios, { all } from 'axios';
 import './ManageTask.css';
 import styled from 'styled-components';
 import Header from './Header';
@@ -225,6 +225,23 @@ const PromptText = styled.p`
   margin-bottom: 10px;
 `;
 
+const taskStatusMap = {
+  "awaiting": '待接取',
+  'ongoing': '进行中',
+  'finished': '已完成',
+  'aborted': '已废弃',
+  // 添加其他状态映射
+};
+
+const taskTagMap = {
+  'All': '全部',
+  'Learning': '学习',
+  'Job': '工作',
+  'Life': '生活',
+  'Else': '其他',
+  // 添加其他标签映射
+};
+
 
 const ManageTasks = () => {
   const username = localStorage.getItem('username');
@@ -263,7 +280,7 @@ const ManageTasks = () => {
       )
     );
     try {
-      const response = await axios.post('http://127.0.0.1:8000/transactions/assign_task/', {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/transactions/assign_task/`, {
         creator_id: user_id,
         task_id: task_id,
         hunter_name: candidate,
@@ -293,7 +310,7 @@ const ManageTasks = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/tasks/?username=${username}`);
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/tasks/?username=${username}`);
         setTasks(response.data);
         setLoading(false);
       } catch (err) {
@@ -336,7 +353,7 @@ const ManageTasks = () => {
     }
 
     try {
-        await axios.put(`http://127.0.0.1:8000/api/change_task/`, {
+        await axios.put(`${process.env.REACT_APP_API_BASE_URL}/api/change_task/`, {
             task_id: editTask.task_id,  // 添加任务 ID
             task_title,
             task_description,
@@ -345,7 +362,7 @@ const ManageTasks = () => {
             deadline,
         });
         setEditTask(null);
-        const response = await axios.get(`http://127.0.0.1:8000/api/tasks/?username=${username}`);
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/tasks/?username=${username}`);
         setTasks(response.data);
     } catch (error) {
         console.error('Error updating task:', error);
@@ -358,7 +375,7 @@ const ManageTasks = () => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.patch(`http://127.0.0.1:8000/api/delete_task/`, {
+      await axios.patch(`${process.env.REACT_APP_API_BASE_URL}/api/delete_task/`, {
         task_id: confirmDeleteTask.task_id,
       });
 
@@ -372,11 +389,11 @@ const ManageTasks = () => {
   };
 
   if (loading) {
-    return <div>Loading tasks...</div>;
+    return <div>加载任务中...</div>;
   }
 
   if (error) {
-    return <div>Error loading tasks: {error}</div>;
+    return <div>错误: {error}</div>;
   }
 
   // const handleUserClick = async (userId) => {
@@ -393,7 +410,7 @@ const ManageTasks = () => {
     <div>
       <SearchInput
         type="text"
-        placeholder="Search tasks by title or description..."
+        placeholder="搜索任务..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
@@ -416,11 +433,11 @@ const ManageTasks = () => {
                 onClick={() => setSelectedTag(tag)}
                 tag={tag} // 传递标签名称以便在样式中使用
               >
-                {tag}
+                {taskTagMap[tag]}
               </FilterButton>
             ))}
-            <FilterButton onClick={() => navigate('/task-to-do')} tag="TaskToDo">Task To Do</FilterButton>
-            <FilterButton onClick={() => navigate('/task-to-review')} tag="TaskToReview">Task To Review</FilterButton>
+            <FilterButton onClick={() => navigate('/task-to-do')} tag="TaskToDo">待办任务</FilterButton>
+            <FilterButton onClick={() => navigate('/task-to-review')} tag="TaskToReview">待评论</FilterButton>
           </FilterContainer>
 
       {/* <TaskButton onClick={handleTaskToDoClick}>Task To Do</TaskButton>
@@ -432,29 +449,29 @@ const ManageTasks = () => {
             <Task key={task.task_id} tag={task.task_tag}>
               <TaskTitle>{task.task_title}</TaskTitle>
               <TaskMeta>
-                <span><strong>Tag:</strong> {task.task_tag}</span>
-                <span><strong>Reward Points:</strong> {task.reward_points}</span>
-                <span><strong>Status:</strong> {task.task_status}</span>
-                <p><strong>Deadline:</strong> {new Date(task.deadline).toLocaleString()}</p>
+                <span><strong>任务标签</strong> {taskTagMap[task.task_tag]}</span>
+                <span><strong>奖励积分:</strong> {task.reward_points}</span>
+                <span><strong>任务状态:</strong> {taskStatusMap[task.task_status]}</span>
+                <p><strong>截止日期:</strong> {new Date(task.deadline).toLocaleString()}</p>
                 <CandidateButton onClick={() => handleCandidateClick(task)}>
-                  Number of Candidates: {task.candidates.length}
+                  可选猎人: {task.candidates.length}
                 </CandidateButton>
               </TaskMeta>
               <ButtonContainer>
-              <TaskButton onClick={() => setSelectedTask(task)}>View Details</TaskButton>
+              <TaskButton onClick={() => setSelectedTask(task)}>查看详情</TaskButton>
 
               {/* 只有当任务状态为 "awaiting" 时显示 Edit 和 Delete 按钮 */}
               {task.task_status === 'awaiting' && (
                 <>
-                  <TaskButton onClick={() => handleEditClick(task)}>Edit</TaskButton>
-                  <TaskButton onClick={() => handleDeleteClick(task)}>Delete</TaskButton>
+                  <TaskButton onClick={() => handleEditClick(task)}>编辑</TaskButton>
+                  <TaskButton onClick={() => handleDeleteClick(task)}>删除</TaskButton>
                 </>
               )}
               </ButtonContainer>
             </Task>
           ))
         ) : (
-          <p>No tasks found.</p>
+          <p>无任务.</p>
         )}
       </TaskListContainer>
       
@@ -462,8 +479,8 @@ const ManageTasks = () => {
       {showCandidateModal && (
         <ModalBackground onClick={() => setShowCandidateModal(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <h3>Candidates</h3>
-            <PromptText>Please select one candidate:</PromptText>
+            <h3>候选猎人</h3>
+            <PromptText>请选择猎人:</PromptText>
             <CandidateList>
               {selectedCandidates.length > 0 ? (
                 selectedCandidates.map(({ name, task_id, isSelected }) => (
@@ -476,10 +493,10 @@ const ManageTasks = () => {
                   </CandidateItem>
                 ))
               ) : (
-                <p>No candidates</p>
+                <p>无猎人可选</p>
               )}
             </CandidateList>
-            <TaskButton onClick={() => setShowCandidateModal(false)}>Close</TaskButton>
+            <TaskButton onClick={() => setShowCandidateModal(false)}>关闭</TaskButton>
           </ModalContent>
         </ModalBackground>
       )}
@@ -491,13 +508,13 @@ const ManageTasks = () => {
             <h3>{selectedTask.task_title}</h3>
             <p>{selectedTask.task_description}</p>
             <TaskMeta>
-              <span><strong>Tag:</strong> {selectedTask.task_tag}</span>
-              <span><strong>Reward Points:</strong> {selectedTask.reward_points}</span>
-              <span><strong>Status:</strong> {selectedTask.task_status}</span>
-              <span><strong>Deadline:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
-              <p><strong>Candidates:</strong> {selectedTask.candidates && selectedTask.candidates.length > 0 ? selectedTask.candidates.join(', ') : 'nobody'}</p>
+              <span><strong>任务标签:</strong> {taskTagMap[selectedTask.task_tag]}</span>
+              <span><strong>奖励积分:</strong> {selectedTask.reward_points}</span>
+              <span><strong>状态:</strong> {taskStatusMap[selectedTask.task_status]}</span>
+              <span><strong>任务截止日期:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
+              <p><strong>候选猎人:</strong> {selectedTask.candidates && selectedTask.candidates.length > 0 ? selectedTask.candidates.join(', ') : 'nobody'}</p>
             </TaskMeta>
-            <TaskButton onClick={() => setSelectedTask(null)}>Close</TaskButton>
+            <TaskButton onClick={() => setSelectedTask(null)}>关闭</TaskButton>
           </ModalContent>
         </ModalBackground>
       )}
@@ -506,7 +523,7 @@ const ManageTasks = () => {
       {editTask && (
         <ModalBackground onClick={() => setEditTask(null)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <h3>Edit Task</h3>
+            <h3>编辑任务</h3>
             <EditTaskInput
               type="text"
               value={editTaskData.task_title}
@@ -535,8 +552,8 @@ const ManageTasks = () => {
               value={editTaskData.deadline}
               onChange={(e) => setEditTaskData({ ...editTaskData, deadline: e.target.value })}
             />
-            <TaskButton onClick={handleEditSubmit}>Save Changes</TaskButton>
-            <TaskButton onClick={() => setEditTask(null)}>Cancel</TaskButton>
+            <TaskButton onClick={handleEditSubmit}>保存</TaskButton>
+            <TaskButton onClick={() => setEditTask(null)}>取消</TaskButton>
           </ModalContent>
         </ModalBackground>
       )}
@@ -545,9 +562,9 @@ const ManageTasks = () => {
         <ModalBackground onClick={() => setSelectedUser(null)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <h3>{userInfo.nickname}</h3>
-            <p><strong>Credit Score:</strong> {userInfo.credit_score}</p>
-            <p><strong>Ability Score:</strong> {userInfo.ability_score}</p>
-            <TaskButton onClick={() => setSelectedUser(null)}>Close</TaskButton>
+            <p><strong>信誉值:</strong> {userInfo.credit_score}</p>
+            <p><strong>能力值:</strong> {userInfo.ability_score}</p>
+            <TaskButton onClick={() => setSelectedUser(null)}>关闭</TaskButton>
           </ModalContent>
         </ModalBackground>
       )}
@@ -556,10 +573,10 @@ const ManageTasks = () => {
       {confirmDeleteTask && (
         <ModalBackground onClick={() => setConfirmDeleteTask(null)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <h3>Confirm Deletion</h3>
-            <p>Are you sure you want to delete the task "{confirmDeleteTask.task_title}"?</p>
-            <TaskButton onClick={handleDeleteConfirm}>Yes, Delete</TaskButton>
-            <TaskButton onClick={() => setConfirmDeleteTask(null)}>Cancel</TaskButton>
+            <h3>确认删除</h3>
+            <p>你确定要删除 "{confirmDeleteTask.task_title}"?</p>
+            <TaskButton onClick={handleDeleteConfirm}>是的，删除</TaskButton>
+            <TaskButton onClick={() => setConfirmDeleteTask(null)}>取消</TaskButton>
           </ModalContent>
         </ModalBackground>
       )}

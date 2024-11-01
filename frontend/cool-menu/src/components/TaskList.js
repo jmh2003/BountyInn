@@ -142,6 +142,23 @@ const ModalContent = styled.div`
   width: 100%;
 `;
 
+const taskStatusMap = {
+  "awaiting": '待接取',
+  'ongoing': '进行中',
+  'finished': '已完成',
+  'aborted': '已废弃',
+  // 添加其他状态映射
+};
+
+const taskTagMap = {
+  'All': '全部',
+  'Learning': '学习',
+  'Job': '工作',
+  'Life': '生活',
+  'Else': '其他',
+  // 添加其他标签映射
+};
+
 const TaskList = () => {
   const user_id = localStorage.getItem('user_id');
   const [tasks, setTasks] = useState([]);
@@ -157,7 +174,7 @@ const TaskList = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/all_tasks/');
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/all_tasks/`);
         setTasks(response.data);
         setLoading(false);
       } catch (err) {
@@ -175,7 +192,7 @@ const TaskList = () => {
       for (const task of tasks) {
         if (!creatorNicknames[task.creator_id]) {
           try {
-            const response = await axios.post('http://127.0.0.1:8000/api/find_user/', {
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/find_user/`, {
               user_id: task.creator_id,
             });
             if (response.data.nickname) {
@@ -201,7 +218,7 @@ const TaskList = () => {
         return;
       }
 
-      const response = await axios.post('http://127.0.0.1:8000/transactions/apply_for_task/', {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/transactions/apply_for_task/`, {
         hunter_id: user_id,
         task_id: taskId,
       });
@@ -222,7 +239,7 @@ const TaskList = () => {
 
   const checkIfTaskApplied = async (taskId) => {
     try {
-      const response = await axios.post('http://127.0.0.1:8000/transactions/check_task_applied/', {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/transactions/check_task_applied/`, {
         hunter_id: user_id,
         task_id: taskId,
       });
@@ -256,7 +273,7 @@ const TaskList = () => {
     <div>
       <SearchInput
         type="text"
-        placeholder="Search tasks by title or description..."
+        placeholder="搜索任务..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
@@ -268,7 +285,7 @@ const TaskList = () => {
             active={selectedTag === tag}
             onClick={() => setSelectedTag(tag)}
           >
-            {tag}
+            {taskTagMap[tag]}
           </FilterButton>
         ))}
       </FilterContainer>
@@ -279,21 +296,21 @@ const TaskList = () => {
             <Task key={task.task_id} tag={task.task_tag}>
               <TaskTitle>{task.task_title}</TaskTitle>
               <TaskMeta>
-                <span><strong>Tag:</strong> {task.task_tag}</span>
-                <span><strong>Reward Points:</strong> {task.reward_points}</span>
-                <span><strong>Status:</strong> {task.task_status}</span>
-                <span><strong>Deadline:</strong> {new Date(task.deadline).toLocaleString()}</span>
-                <span><strong>Creator:</strong> {creatorNicknames[task.creator_id] || 'Loading...'}</span> {/* 显示creator的nickname */}
+                <span><strong>任务标签:</strong> {taskTagMap[task.task_tag]}</span>
+                <span><strong>奖励积分:</strong> {task.reward_points}</span>
+                <span><strong>任务状态:</strong> {taskStatusMap[task.task_status]}</span>
+                <span><strong>截止日期:</strong> {new Date(task.deadline).toLocaleString()}</span>
+                <span><strong>创建者:</strong> {creatorNicknames[task.creator_id] || 'Loading...'}</span> {/* 显示creator的nickname */}
               </TaskMeta>
               <TaskButton
                 onClick={() => openTaskModal(task)}
               >
-                View Details
+                查看详情
               </TaskButton>
             </Task>
           ))
         ) : (
-          <p>No tasks found.</p>
+          <p>无任务.</p>
         )}
       </TaskListContainer>
 
@@ -303,22 +320,22 @@ const TaskList = () => {
             <h3>{selectedTask.task_title}</h3>
             <p>{selectedTask.task_description}</p>
             <TaskMeta>
-              <span><strong>Tag:</strong> {selectedTask.task_tag}</span>
-              <span><strong>Reward Points:</strong> {selectedTask.reward_points}</span>
-              <span><strong>Status:</strong> {selectedTask.task_status}</span>
-              <span><strong>Deadline:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
+              <span><strong>任务标签:</strong> {taskTagMap[selectedTask.task_tag]}</span>
+              <span><strong>奖励积分:</strong> {selectedTask.reward_points}</span>
+              <span><strong>任务状态:</strong> {taskStatusMap[selectedTask.task_status]}</span>
+              <span><strong>截止日期:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
             </TaskMeta>
 
             <TaskButton
               onClick={() => handleApply(selectedTask.task_id)}
               disabled={appliedTasks.includes(selectedTask.task_id)} // 如果任务已申请，禁用按钮
             >
-              {appliedTasks.includes(selectedTask.task_id) ? 'Already Applied' : 'Apply for Task'}
+              {appliedTasks.includes(selectedTask.task_id) ? 'Already Applied' : '申请任务'}
             </TaskButton>
 
             {applyMessage && <p>{applyMessage}</p>}
 
-            <TaskButton onClick={() => setSelectedTask(null)}>Close</TaskButton>
+            <TaskButton onClick={() => setSelectedTask(null)}>关闭</TaskButton>
           </ModalContent>
         </ModalBackground>
       )}

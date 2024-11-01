@@ -151,6 +151,26 @@ const EditTaskInput = styled.textarea`
   resize: vertical; /* Allow vertical resizing */
 `;
 
+
+const taskStatusMap = {
+  "awaiting": '待接取',
+  'ongoing': '进行中',
+  'finished': '已完成',
+  'aborted': '已废弃',
+  // 添加其他状态映射
+};
+
+const taskTagMap = {
+  'All': '全部',
+  'Learning': '学习',
+  'Job': '工作',
+  'Life': '生活',
+  'Else': '其他',
+  // 添加其他标签映射
+};
+
+
+
 const ManageTasks = () => {
   const username = localStorage.getItem('username');
 
@@ -166,7 +186,7 @@ const ManageTasks = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/tasks_for_assignee/?username=${username}`);
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/tasks_for_assignee/?username=${username}`);
         setTasks(response.data);
         setLoading(false);
       } catch (err) {
@@ -207,12 +227,12 @@ const ManageTasks = () => {
     }
 
     try {
-      await axios.put(`http://127.0.0.1:8000/api/submit_task_outcome/`, {
+      await axios.put(`${process.env.REACT_APP_API_BASE_URL}/api/submit_task_outcome/`, {
         task_id: editTask.task_id,
         task_outcome: task_outcome,
       });
       setEditTask(null);
-      const response = await axios.get(`http://127.0.0.1:8000/api/tasks/?username=${username}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/tasks/?username=${username}`);
       setTasks(response.data);
     } catch (error) {
       console.error('Error updating task:', error);
@@ -235,7 +255,7 @@ const ManageTasks = () => {
             active={selectedTag === tag}
             onClick={() => setSelectedTag(tag)}
           >
-            {tag}
+            {taskTagMap[tag]}
           </FilterButton>
         ))}
       </FilterContainer>
@@ -246,17 +266,17 @@ const ManageTasks = () => {
             <Task key={task.task_id} tag={task.task_tag}>
               <TaskTitle>{task.task_title}</TaskTitle>
               <TaskMeta>
-                <span><strong>Tag:</strong> {task.task_tag}</span>
-                <span><strong>Reward Points:</strong> {task.reward_points}</span>
-                <span><strong>Status:</strong> {task.task_status}</span>
-                <p><strong>Deadline:</strong> {new Date(task.deadline).toLocaleString()}</p>
+                <span><strong>任务标签:</strong> {taskTagMap[task.task_tag]}</span>
+                <span><strong>奖励积分:</strong> {task.reward_points}</span>
+                <span><strong>任务状态:</strong> {taskStatusMap[task.task_status]}</span>
+                <p><strong>截止日期:</strong> {new Date(task.deadline).toLocaleString()}</p>
               </TaskMeta>
-              <TaskButton onClick={() => setSelectedTask(task)}>View Details</TaskButton>
-              <TaskButton onClick={() => handleEditClick(task)}>Submit Task Outcome</TaskButton>
+              <TaskButton onClick={() => setSelectedTask(task)}>查看详情</TaskButton>
+              <TaskButton onClick={() => handleEditClick(task)}>提交成果</TaskButton>
             </Task>
           ))
         ) : (
-          <p>No tasks found.</p>
+          <p>无任务.</p>
         )}
       </TaskListContainer>
 
@@ -267,13 +287,13 @@ const ManageTasks = () => {
             <h3>{selectedTask.task_title}</h3>
             <p>{selectedTask.task_description}</p>
             <TaskMeta>
-              <span><strong>Tag:</strong> {selectedTask.task_tag}</span>
-              <span><strong>Reward Points:</strong> {selectedTask.reward_points}</span>
-              <span><strong>Status:</strong> {selectedTask.task_status}</span>
-              <span><strong>Deadline:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
-              <p><strong>Candidates:</strong> {selectedTask.candidates && selectedTask.candidates.length > 0 ? selectedTask.candidates.join(', ') : 'nobody'}</p>
+              <span><strong>任务标签:</strong> {taskTagMap[selectedTask.task_tag]}</span>
+              <span><strong>奖励积分:</strong> {selectedTask.reward_points}</span>
+              <span><strong>任务状态:</strong> {taskStatusMap[selectedTask.task_status]}</span>
+              <span><strong>截止日期:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
+              <p><strong>候选猎人:</strong> {selectedTask.candidates && selectedTask.candidates.length > 0 ? selectedTask.candidates.join(', ') : 'nobody'}</p>
             </TaskMeta>
-            <TaskButton onClick={() => setSelectedTask(null)}>Close</TaskButton>
+            <TaskButton onClick={() => setSelectedTask(null)}>关闭</TaskButton>
           </ModalContent>
         </ModalBackground>
       )}
@@ -282,14 +302,14 @@ const ManageTasks = () => {
       {editTask && (
         <ModalBackground onClick={() => setEditTask(null)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <h3>Submit Task Outcome</h3>
+            <h3>提交成果（在东家评论前可以重复提交）</h3>
             <EditTaskInput
               value={editTaskData.task_outcome}
               onChange={(e) => setEditTaskData({ ...editTaskData, task_outcome: e.target.value })}
-              placeholder="Task Outcome"
+              placeholder="提交成果,此处可以传入云盘网址，将附件传入云盘"
             />
-            <TaskButton onClick={handleEditSubmit}>Save Changes</TaskButton>
-            <TaskButton onClick={() => setEditTask(null)}>Cancel</TaskButton>
+            <TaskButton onClick={handleEditSubmit}>提交</TaskButton>
+            <TaskButton onClick={() => setEditTask(null)}>取消</TaskButton>
           </ModalContent>
         </ModalBackground>
       )}

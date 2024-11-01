@@ -139,7 +139,7 @@ const Header = () => {
     setInput('');
 
     try {
-      const res = await fetch('http://localhost:8000/api/get_openai_response/', {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/get_openai_response/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
