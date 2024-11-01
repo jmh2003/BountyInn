@@ -22,7 +22,7 @@ const CommentItem = styled.div`
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 15px;
-  background-color: #fff;
+  background-color: rgb(255,255,255,0.8);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 `;
 
@@ -35,6 +35,7 @@ const CommentHeader = styled.div`
 const Nickname = styled.p`
   font-weight: bold;
   margin: 0;
+  color: #333;
 `;
 
 const Timestamp = styled.p`
@@ -79,11 +80,20 @@ const Form = styled.form`
 `;
 
 const TextArea = styled.textarea`
+  width: 100%;
   padding: 10px;
-  margin-bottom: 10px;
-  resize: none;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: '宋体', 'SimSun', 'Songti SC', serif; /* 设置字体 */
+  font-size: 16px;
+  color: #333;
+
+  &:focus {
+    outline: none;
+    border-color: #66afe9;
+    box-shadow: 0 0 5px rgba(102, 175, 233, 0.6);
+  }
 `;
 
 const Button = styled.button`

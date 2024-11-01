@@ -15,7 +15,7 @@ const TableContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #f8f9fa; /* 设置为浅色背景 */
+  background-color: rgba(51,51,51,0.3); /* 设置为浅色背景 */
   padding: 20px;
   border-radius: 10px;
   width: 100%;
@@ -33,7 +33,7 @@ const SelectionContainer = styled.div`
 const RankingsTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  background-color: #ffffff; /* 表格白色背景 */
+  background-color: rgba(255,255,255,0.8); /* 表格白色背景 */
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
@@ -43,12 +43,13 @@ const RankingsTable = styled.table`
     text-align: left;
   }
   th {
-    background-color: #e3f2fd; /* 表头背景颜色 */
+    background-color: rgba(51,51,51,0.5); /* 表头背景颜色 */
+    color: black; /* 表头文字颜色 */
   }
 `;
 
 const BlueSelection = styled.div`
-  background-color: #e0f7fa; /* 浅蓝色背景 */
+  background-color: rgba(51,51,51,0.5); /* 浅蓝色背景 */
   padding: 20px;
   border-radius: 10px;
   margin-bottom: 20px;
@@ -69,7 +70,7 @@ const StyledSelect = styled.select`
   margin-bottom: 10px;
   width: 100%;
   font-size: 16px;
-  background-color: #fff;
+  background-color: rgba(255,255,255,0.5);
 `;
 
 const StyledInput = styled.input`
@@ -79,13 +80,14 @@ const StyledInput = styled.input`
   margin-bottom: 10px;
   width: 100%;
   font-size: 16px;
-  background-color: #fff;
+  background-color: rgba(51,51,51,0.5);
+  color: white;
 `;
 
 const StyledButton = styled.button`
   padding: 10px;
   border-radius: 10px;
-  background-color: #26a69a;
+  background-color: rgba(51,51,51,0.5); /* 按钮背景颜色 */
   color: white;
   border: none;
   width: 100%;
@@ -94,6 +96,19 @@ const StyledButton = styled.button`
   &:hover {
     background-color: #00796b;
   }
+`;
+const Background = styled.div`
+  background-image: url('/inn.jpg'); /* 确保图片位于 public 文件夹 */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  
 `;
 
 const Rankings = () => {
@@ -116,9 +131,14 @@ const Rankings = () => {
   const fetchUserRank = async () => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/get-user-rank/`, { rankType, username });
-      setUserRank(response.data.userRank);
+      if (response.data.userRank) {
+        setUserRank(response.data.userRank);
+      } else {
+        setUserRank(null);
+      }
     } catch (error) {
       console.error("获取用户排名失败", error);
+      setUserRank(null); // 确保在发生错误时清空 userRank
     }
   };
 
@@ -127,10 +147,12 @@ const Rankings = () => {
   }, [rankType]);
 
   return (
+    <>
+    <Background/>
     <div>
       <Container>
         <TableContainer>
-          <h2>排行榜</h2>
+        <h2 style={{ color: 'gold' }}>排行榜</h2> 
           <RankingsTable>
             <thead>
               <tr>
@@ -159,41 +181,38 @@ const Rankings = () => {
 
         <SelectionContainer>
           <BlueSelection>
-            <h3>选择排名种类</h3>
+            <h4 style={{ color: 'gold' }}>选择排名指标</h4>
             <StyledSelect value={rankType} onChange={(e) => setRankType(e.target.value)}>
               <option value="剩余积分">剩余积分</option>
               <option value="能力分数">能力分数</option>
               <option value="信用分数">信用分数</option>
             </StyledSelect>
-          </BlueSelection>
-
-          <RedSelection>
-            <h3>查询个人排名,输入用户名称：</h3>
+            <h4 style={{ color: 'gold' }}>查询个人排名,输入用户名称：</h4>
             <StyledInput
               type="text"
               placeholder="输入你的ID"
               value={username}
               onChange={(e) => setUserId(e.target.value)}
             />
-            <BlueSelection>
-            <h3>选择排名种类</h3>
-            <StyledSelect value={rankType} onChange={(e) => setRankType(e.target.value)}>
-              <option value="剩余积分">剩余积分</option>
-              <option value="能力分数">能力分数</option>
-              <option value="信用分数">信用分数</option>
-            </StyledSelect>
-          </BlueSelection>
+
             <StyledButton onClick={fetchUserRank}>查询</StyledButton>
-            {userRank && (
-              <div>
-                <p>你的排名: {userRank.rank}</p>
-                <p>分数: {userRank.score}</p>
-              </div>
-            )}
-          </RedSelection>
+            {userRank ? (
+                <div>
+                  <p style={{ color: 'white' }}>你的排名: {userRank.rank}</p>
+                  <p style={{ color: 'white' }}>分数: {userRank.score}</p>
+                </div>
+              ) : (
+                <div>
+                  <p style={{ color: 'white' }}>未找到用户排名</p>
+                </div>
+              )}
+          </BlueSelection>
+
+
         </SelectionContainer>
       </Container>
     </div>
+    </>
   );
 };
 
