@@ -88,7 +88,7 @@ const TextArea = styled.textarea`
 
 const Button = styled.button`
   padding: 12px 20px;
-  background-color: #1aad19;
+  background-color: rgb(51, 51, 51);
   color: white;
   border: none;
   border-radius: 30px;
@@ -112,6 +112,23 @@ const Button = styled.button`
     width: 100%;
     align-self: stretch;
   }
+
+ `;
+
+
+
+const Background = styled.div`
+  background-image: url('/inn.jpg'); /* 确保图片位于 public 文件夹 */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  
 `;
 
 // 主组件
@@ -214,9 +231,11 @@ function Forum() {
   if (error) return <p>{error}</p>;
 
   return (
-    <Container>
-      <h2>论坛</h2>
+     <>
+       <Background />
 
+
+    <Container>
       {/* 查询部分 */}
       <SearchInput
         type="text"
@@ -253,6 +272,8 @@ function Forum() {
         <Button type="submit">发布留言</Button>
       </Form>
     </Container>
+
+    </>
   );
 }
 
