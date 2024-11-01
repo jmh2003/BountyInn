@@ -215,6 +215,14 @@ const Header = () => {
         >
           赏金论坛
         </MenuLink>
+        <MenuLink
+          to={'/rules'}
+          isSelected={selectedButton === 'rules'}
+          onClick={handleMenuClick('rules', '/rules')}
+        >
+          客栈规则
+        </MenuLink>
+
       </Menu>
       <UserProfileImage
         src="/user.jpg"

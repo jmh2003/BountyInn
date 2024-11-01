@@ -13,6 +13,7 @@ import TaskToDo from './components/TaskToDo';
 import TaskToReview from './components/TaskToReview';
 import Forum from './components/Forum';
 import Header from './components/Header';
+import Rules from './components/Rules';
 
 function App() {
   const location = useLocation();
@@ -32,6 +33,7 @@ function App() {
         <Route path="/task-to-review" element={<TaskToReview/>} />
         <Route path='/' element={<Login />} />
         <Route path='/forum' element={<Forum />} />
+        <Route path='/rules' element={<Rules />} />
       </Routes>
     </div>
   );
