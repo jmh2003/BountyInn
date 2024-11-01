@@ -224,12 +224,14 @@ const Header = () => {
       <ExitLink to={'/'}>
         <FontAwesomeIcon icon={faSignOutAlt} />
       </ExitLink>
-      <Draggable>
+      
+      {/* <Draggable>
         <FloatingBall onClick={toggleVisibility}>
-          {/* <FontAwesomeIcon icon={faWindowMaximize} /> */}
+        
           AI
         </FloatingBall>
       </Draggable>
+
       <Draggable>
         <ChatBox isMinimized={isMinimized} isVisible={isVisible}>
           <ChatHeader onClick={toggleMinimize}>
@@ -253,7 +255,9 @@ const Header = () => {
             </>
           )}
         </ChatBox>
-      </Draggable>
+      </Draggable> */}
+
+
     </NavBar>
   );
 };

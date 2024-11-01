@@ -524,29 +524,50 @@ const ManageTasks = () => {
         <ModalBackground onClick={() => setEditTask(null)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <h3>编辑任务</h3>
+            <label>任务标题</label>
             <EditTaskInput
               type="text"
               value={editTaskData.task_title}
               onChange={(e) => setEditTaskData({ ...editTaskData, task_title: e.target.value })}
               placeholder="Task Title"
             />
+            <label>任务描述</label>
             <EditTaskTextarea
               value={editTaskData.task_description}
               onChange={(e) => setEditTaskData({ ...editTaskData, task_description: e.target.value })}
               placeholder="Task Description"
             />
-            <EditTaskInput
+            {/* <h4>任务标签</h4>
+            <select id="task_tag" value={taskTag} onChange={(e) => setTaskTag(e.target.value)}>
+                <option value="Learning">学习</option>
+                <option value="Life">生活</option>
+                <option value="Job">工作</option>
+                <option value="Else">其他</option>
+              </select> */}
+
+              <label>任务标签</label>
+            <select id="task_tag" value={editTaskData.task_tag} onChange={(e) => setEditTaskData({ ...editTaskData, task_tag: e.target.value })}>
+                <option value="Learning">学习</option>
+                <option value="Life">生活</option>
+                <option value="Job">工作</option>
+                <option value="Else">其他</option>
+              </select>
+
+
+            {/* <EditTaskInput
               type="text"
               value={editTaskData.task_tag}
               onChange={(e) => setEditTaskData({ ...editTaskData, task_tag: e.target.value })}
               placeholder="Task Tag"
-            />
+            /> */}
+            <label>奖励积分</label>
             <EditTaskInput
               type="number"
               value={editTaskData.reward_points}
               onChange={(e) => setEditTaskData({ ...editTaskData, reward_points: Number(e.target.value) })}
               placeholder="Reward Points"
             />
+            <label>截止日期</label>
             <EditTaskInput
               type="datetime-local"
               value={editTaskData.deadline}

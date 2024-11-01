@@ -330,7 +330,7 @@ const TaskList = () => {
               onClick={() => handleApply(selectedTask.task_id)}
               disabled={appliedTasks.includes(selectedTask.task_id)} // 如果任务已申请，禁用按钮
             >
-              {appliedTasks.includes(selectedTask.task_id) ? 'Already Applied' : '申请任务'}
+              {appliedTasks.includes(selectedTask.task_id) ? '已经申请' : '申请任务'}
             </TaskButton>
 
             {applyMessage && <p>{applyMessage}</p>}
