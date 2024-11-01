@@ -177,6 +177,7 @@ def change_task(request):
     task.reward_points = request.data.get('reward_points', task.reward_points)
     task.deadline = request.data.get('deadline', task.deadline)
     task.task_status = request.data.get('task_status', task.task_status)
+    task.task_tag = request.data.get('task_tag',task.task_tag) # 更新任务标签
 
     task.save()  # 保存更改
     return Response({'message': 'Task updated successfully'}, status=200)
