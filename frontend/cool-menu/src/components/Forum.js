@@ -225,7 +225,9 @@ function Forum() {
       setError(null);
     } catch (err) {
       console.error("发布评论失败", err);
-      setError("无法发布评论");
+      // setError("无法发布评论");
+      alert('发布评论失败，请重试。'); // 显示弹窗
+      // setError("无法发布评论");
     }
   };
 

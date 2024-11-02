@@ -110,7 +110,7 @@ def get_user_rank(request):
     users = User.objects.all().order_by(order_field)
     rank = list(users).index(user) + 1  # 排名从1开始
 
-    return Response({"userRank": {"rank": rank, "score": getattr(user, order_field.lstrip('-'))}},
+    return Response({"userRank": {"nickname":user.nickname,"rank": rank, "score": getattr(user, order_field.lstrip('-')),"user_introduction":user.user_introduction}},
                     status=status.HTTP_200_OK)
 
 @api_view(['POST'])

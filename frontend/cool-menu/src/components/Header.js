@@ -152,10 +152,10 @@ const Header = () => {
       }
 
       const data = await res.json();
-      const botMessage = { text: data.answer || '客服kimi好累，请稍后再试', isUser: false };
+      const botMessage = { text: data.answer || '店小二好累，请稍后再试', isUser: false };
       setMessages([...messages, userMessage, botMessage]);
     } catch (error) {
-      const botMessage = { text: '客服kimi好累，请稍后再试', isUser: false };
+      const botMessage = { text: '店小二好累，请稍后再试', isUser: false };
       setMessages([...messages, userMessage, botMessage]);
     }
   };

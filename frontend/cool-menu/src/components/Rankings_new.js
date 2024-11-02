@@ -70,6 +70,8 @@ const StyledSelect = styled.select`
   margin-bottom: 10px;
   width: 100%;
   font-size: 16px;
+  color: black;
+  bold: true;
   background-color: rgba(255,255,255,0.5);
 `;
 
@@ -187,19 +189,23 @@ const Rankings = () => {
               <option value="能力分数">能力分数</option>
               <option value="信用分数">信用分数</option>
             </StyledSelect>
-            <h4 style={{ color: 'gold' }}>查询个人排名,输入用户名称：</h4>
+            <h4 style={{ color: 'gold' }}>查询个人排名</h4>
             <StyledInput
               type="text"
-              placeholder="输入你的ID"
+              placeholder="输入查询的用户名"
               value={username}
               onChange={(e) => setUserId(e.target.value)}
             />
 
-            <StyledButton onClick={fetchUserRank}>查询</StyledButton>
+            <StyledButton onClick={fetchUserRank}  >查询</StyledButton>
             {userRank ? (
                 <div>
-                  <p style={{ color: 'white' }}>你的排名: {userRank.rank}</p>
+                  <p style={{ color: 'white' }}>昵称: {userRank.nickname}</p>
+                  <p style={{ color: 'white' }}>排名: {userRank.rank}</p>
                   <p style={{ color: 'white' }}>分数: {userRank.score}</p>
+                  <p style={{ color: 'white' }}>介绍: {userRank.user_introduction}</p>
+                  <></>
+
                 </div>
               ) : (
                 <div>

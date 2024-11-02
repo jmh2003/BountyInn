@@ -224,6 +224,10 @@ def update_nickname(request):
 
     try:
         user = User.objects.get(nickname=username)  # 根据用户名查找用户
+        # 检查新昵称是否已被其他用户使用
+        if User.objects.filter(nickname=new_nickname).exists():
+            return JsonResponse({'error': '该昵称已被占用，请选择其他昵称'}, status=400)
+
         user.nickname = new_nickname  # 更新昵称
         user.save()  # 保存用户信息
         

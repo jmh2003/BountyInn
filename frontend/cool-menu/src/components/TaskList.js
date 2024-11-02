@@ -20,6 +20,21 @@ const TaskListContainer = styled.div`
   }
 `;
 
+// 背景组件
+const Background = styled.div`
+  background-image: url('/inn.jpg'); /* 确保图片位于 public 文件夹 */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+`;
+
+
 // 定义任务背景颜色，根据不同标签返回不同颜色
 const getTaskBackgroundColor = (tag) => {
   switch (tag.toLowerCase()) {
@@ -270,6 +285,8 @@ const TaskList = () => {
   if (error) return <div>Error loading tasks: {error}</div>;
 
   return (
+    <>
+      <Background />
     <div>
       <SearchInput
         type="text"
@@ -340,6 +357,7 @@ const TaskList = () => {
         </ModalBackground>
       )}
     </div>
+    </>
   );
 };
 

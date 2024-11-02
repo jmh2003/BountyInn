@@ -132,3 +132,17 @@ p {
   transform: scale(1.02); /* 悬停时放大 */
 }
 
+/* 添加右侧装饰花纹 */
+.info-section::after {
+  content: '';
+  position: absolute;
+  bottom: -50px; /* 离底部20px */
+  left: 50%;
+  transform: translate(-50%, 0); /* 水平居中 */
+  width: 300px; /* 增加宽度 */
+  height: 200px; /* 增加高度 */
+  background-image: url('../../public/inn.jpg');  /*替换为你的花纹图案 */
+  background-size: contain; /* 让图案保持纵横比 */
+  background-repeat: no-repeat; /* 防止图案重复 */
+  opacity: 0.7; /* 增加透明度，确保更明显 */
+}
