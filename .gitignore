@@ -161,7 +161,6 @@ cython_debug/
 
 # Others
 pnpm-lock.yaml
-*.txt
 Prompt.py
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
