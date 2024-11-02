@@ -94,7 +94,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOWED_ORIGINS needs to include the front-end React port "http://127.0.0.1:3000". In the front end, in`frontend/cool-menu/.env`, the back-end Django URL needs to be filled in.
 
 ```
-REACT_APP_API_BASE_URL=http://http://127.0.0.1:8000
+REACT_APP_API_BASE_URL=http://127.0.0.1:8000
 ```
 
 ### 8. Run
