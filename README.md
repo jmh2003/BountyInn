@@ -4,11 +4,6 @@ Bounty Inn is a Django-based platform for task trading and community interaction
 
 ![image-20241102154325363](frontend/cool-menu/public/login.png)
 
-## Table of Contents
-
-[TOC]
-
----
 
 ## Feature Overview
 
