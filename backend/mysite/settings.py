@@ -38,12 +38,12 @@ INSTALLED_APPS = [
     "leaderboard.apps.LeaderboardConfig",
     "users.apps.UsersConfig",
     "transactions.apps.TransactionsConfig",
-    'corsheaders',
-    "forum.apps.ForumConfig"
+    "corsheaders",
+    "forum.apps.ForumConfig",
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -105,7 +105,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = 'Asia/Shanghai'
+TIME_ZONE = "Asia/Shanghai"
 USE_I18N = True
 USE_TZ = False
 

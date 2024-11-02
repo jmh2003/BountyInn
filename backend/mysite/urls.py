@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import include, path
 from mysite.views import get_openai_response
@@ -23,8 +24,7 @@ urlpatterns = [
     path("api/", include("leaderboard.urls")),
     path("api/", include("users.urls")),
     path("api/", include("tasks.urls")),
-    path('api/get_openai_response/', get_openai_response, name='get_openai_response'),
+    path("api/get_openai_response/", get_openai_response, name="get_openai_response"),
     path("transactions/", include("transactions.urls")),
     path("api/", include("forum.urls")),
 ]
-
