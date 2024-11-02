@@ -176,6 +176,22 @@ const Header = () => {
     };
   };
 
+  const avatarSrc = () => {
+    const user_id = localStorage.getItem('user_id') || '';
+  
+    if (user_id%5 === 1) {
+      return '/user0.jpg';
+    } else if (user_id%5 === 2) {
+      return '/user1.jpg';
+    } else if (user_id%5 === 3) {
+      return '/user2.jpg';
+    } else if (user_id%5 === 4) {
+      return '/user3.jpg';
+    } else {
+      return '/user4.jpg';
+    }
+  };
+
   return (
     <NavBar>
       <img src="/logo.png" alt="Logo" style={{ height: '40px', marginLeft: '30px', marginRight: '10px' }} />
@@ -225,7 +241,7 @@ const Header = () => {
 
       </Menu>
       <UserProfileImage
-        src="/user.jpg"
+        src={avatarSrc()}
         alt="用户信息"
         onClick={() => window.location.href = '/Profile'}
       />

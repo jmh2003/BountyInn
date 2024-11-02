@@ -268,6 +268,22 @@ const UserInfo = () => {
     }
   };
 
+  const avatarSrc = () => {
+    const user_id = localStorage.getItem('user_id') || '';
+  
+    if (user_id%5 === 1) {
+      return '/user0.jpg';
+    } else if (user_id%5 === 2) {
+      return '/user1.jpg';
+    } else if (user_id%5 === 3) {
+      return '/user2.jpg';
+    } else if (user_id%5 === 4) {
+      return '/user3.jpg';
+    } else {
+      return '/user4.jpg';
+    }
+  };
+
   useEffect(() => {
     fetchUserInfo();
   }, [username]);
@@ -283,7 +299,7 @@ const UserInfo = () => {
         <Sidebar>
         <div style={avatarContainerStyle}>
                
-                <Avatar src="/user.jpg" alt="用户头像" />
+                <Avatar src={avatarSrc()} alt="用户头像" />
               </div>
 
           <SidebarOption

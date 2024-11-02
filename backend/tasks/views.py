@@ -100,7 +100,10 @@ def get_assignee_tasks(request):
             return JsonResponse({"error": "User not found"}, status=404)
 
         # 获取用户接取的任务 厉害！
-        tasks = Task.objects.filter(assignee_id=user.user_id).values(
+        tasks = Task.objects.filter(
+            assignee_id=user.user_id,
+            task_status="ongoing",
+        ).values(
             "task_id",
             "task_tag",
             "task_title",
@@ -132,6 +135,7 @@ def get_review_tasks(request):
         tasks = Task.objects.filter(
             creator_id=user.user_id,
             task_status="finished",
+            is_reviewed=False,
         ).values(
             "task_id",
             "task_tag",

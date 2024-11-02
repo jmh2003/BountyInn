@@ -4,6 +4,20 @@ import './ManageTask.css';
 import styled from 'styled-components';
 import Header from './Header';
 
+const Background = styled.div`
+background-image: url('/inn.jpg'); /* 确保图片位于 public 文件夹 */
+background-size: cover;
+background-repeat: no-repeat;
+background-position: center;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+z-index: -1;
+
+`;
+
 const TaskListContainer = styled.div`
   padding: 20px;
   display: grid;
@@ -257,92 +271,96 @@ const ManageTasks = () => {
   };
 
   return (
-    <div>
-      <SearchInput
-        type="text"
-        placeholder="Search tasks by title or description..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+    <>
+      <Background />
+      <div>
+        <SearchInput
+          type="text"
+          placeholder="Search tasks by title or description..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
 
-      <FilterContainer>
-        {tags.map(tag => (
-          <FilterButton
-            key={tag}
-            active={selectedTag === tag}
-            onClick={() => setSelectedTag(tag)}
-          >
-            {taskTagMap[tag]}
-          </FilterButton>
-        ))}
-      </FilterContainer>
+        <FilterContainer>
+          {tags.map(tag => (
+            <FilterButton
+              key={tag}
+              active={selectedTag === tag}
+              onClick={() => setSelectedTag(tag)}
+            >
+              {taskTagMap[tag]}
+            </FilterButton>
+          ))}
+        </FilterContainer>
 
-      <TaskListContainer>
-        {filteredTasks.length > 0 ? (
-          filteredTasks.map(task => (
-            <Task key={task.task_id} tag={task.task_tag}>
-              <TaskTitle>{task.task_title}</TaskTitle>
+        <TaskListContainer>
+          {filteredTasks.length > 0 ? (
+            filteredTasks.map(task => (
+              <Task key={task.task_id} tag={task.task_tag}>
+                <TaskTitle>{task.task_title}</TaskTitle>
+                <TaskMeta>
+                  <span><strong>任务标签:</strong> {taskTagMap[task.task_tag]}</span>
+                  <span><strong>奖励积分:</strong> {task.reward_points}</span>
+                  <span><strong>任务状态:</strong> {taskStatusMap[task.task_status]}</span>
+                  <span><strong>截止日期:</strong> {new Date(task.deadline).toLocaleString()}</span>
+                </TaskMeta>
+                <TaskButton onClick={() => handleViewTaskDetails(task)}>查看详情</TaskButton>
+                <TaskButton onClick={() => handleEditClick(task)}>提交成果</TaskButton>
+              </Task>
+            ))
+          ) : (
+            <p>无任务.</p>
+          )}
+        </TaskListContainer>
+
+        {/* Task Details Modal */}
+        {selectedTask && (
+          <ModalBackground onClick={() => setSelectedTask(null)}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <h3>{selectedTask.task_title}</h3>
+              <p>{selectedTask.task_description}</p>
               <TaskMeta>
-                <span><strong>任务标签:</strong> {taskTagMap[task.task_tag]}</span>
-                <span><strong>奖励积分:</strong> {task.reward_points}</span>
-                <span><strong>任务状态:</strong> {taskStatusMap[task.task_status]}</span>
-                <span><strong>截止日期:</strong> {new Date(task.deadline).toLocaleString()}</span>
+                <span><strong>任务标签:</strong> {taskTagMap[selectedTask.task_tag]}</span>
+                <span><strong>奖励积分:</strong> {selectedTask.reward_points}</span>
+                <span><strong>任务状态:</strong> {taskStatusMap[selectedTask.task_status]}</span>
+                <span><strong>截止日期:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
               </TaskMeta>
-              <TaskButton onClick={() => handleViewTaskDetails(task)}>查看详情</TaskButton>
-              <TaskButton onClick={() => handleEditClick(task)}>提交成果</TaskButton>
-            </Task>
-          ))
-        ) : (
-          <p>无任务.</p>
+              <p><strong>提交信息：</strong>{selectedTask.task_outcome}</p>
+
+              {/* 用户评价部分 */}
+              {taskReview ? (
+                <div>
+                  <h4>用户评价</h4>
+                  <p><strong>评分:</strong> {taskReview.rating}</p>
+                  <p><strong>评论:</strong> {taskReview.comment}</p>
+                  <p><strong>评价时间:</strong> {new Date(taskReview.review_at).toLocaleString()}</p>
+                </div>
+              ) : (
+                <p>无评价信息</p>
+              )}
+              <TaskButton onClick={() => setSelectedTask(null)}>关闭</TaskButton>
+            </ModalContent>
+          </ModalBackground>
         )}
-      </TaskListContainer>
 
-      {/* Task Details Modal */}
-      {selectedTask && (
-        <ModalBackground onClick={() => setSelectedTask(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <h3>{selectedTask.task_title}</h3>
-            <p>{selectedTask.task_description}</p>
-            <TaskMeta>
-              <span><strong>任务标签:</strong> {taskTagMap[selectedTask.task_tag]}</span>
-              <span><strong>奖励积分:</strong> {selectedTask.reward_points}</span>
-              <span><strong>任务状态:</strong> {taskStatusMap[selectedTask.task_status]}</span>
-              <span><strong>截止日期:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
-            </TaskMeta>
-            <p><strong>提交信息：</strong>{selectedTask.task_outcome}</p>
-
-            {/* 用户评价部分 */}
-            {taskReview ? (
-              <div>
-                <h4>用户评价</h4>
-                <p><strong>评分:</strong> {taskReview.rating}</p>
-                <p><strong>评论:</strong> {taskReview.comment}</p>
-                <p><strong>评价时间:</strong> {new Date(taskReview.review_at).toLocaleString()}</p>
-              </div>
-            ) : (
-              <p>无评价信息</p>
-            )}
-            <TaskButton onClick={() => setSelectedTask(null)}>关闭</TaskButton>
-          </ModalContent>
-        </ModalBackground>
-      )}
-
-      {/* Edit Task Modal */}
-      {editTask && (
-        <ModalBackground onClick={() => setEditTask(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <h3>提交成果（在东家评论前可以重复提交）</h3>
-            <EditTaskInput
-              value={editTaskData.task_outcome}
-              onChange={(e) => setEditTaskData({ ...editTaskData, task_outcome: e.target.value })}
-              placeholder="提交成果,此处可以传入云盘网址，将附件传入云盘"
-            />
-            <TaskButton onClick={handleEditSubmit}>提交</TaskButton>
-            <TaskButton onClick={() => setEditTask(null)}>取消</TaskButton>
-          </ModalContent>
-        </ModalBackground>
-      )}
-    </div>
+        {/* Edit Task Modal */}
+        {editTask && (
+          <ModalBackground onClick={() => setEditTask(null)}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <h3>提交成果（在东家评论前可以重复提交）</h3>
+              <EditTaskInput
+                value={editTaskData.task_outcome}
+                onChange={(e) => setEditTaskData({ ...editTaskData, task_outcome: e.target.value })}
+                placeholder="提交成果,此处可以传入云盘网址，将附件传入云盘"
+              />
+              <TaskButton onClick={handleEditSubmit}>提交</TaskButton>
+              <TaskButton onClick={() => setEditTask(null)}>取消</TaskButton>
+            </ModalContent>
+          </ModalBackground>
+        )}
+      </div>
+    </>
+    
   );
 };
 

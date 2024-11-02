@@ -4,6 +4,20 @@ import './ManageTask.css';
 import styled from 'styled-components';
 import Header from './Header';
 
+const Background = styled.div`
+background-image: url('/inn.jpg'); /* 确保图片位于 public 文件夹 */
+background-size: cover;
+background-repeat: no-repeat;
+background-position: center;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+z-index: -1;
+
+`;
+
 const EditTaskTextarea = styled.textarea`
   margin-bottom: 15px;
   padding: 10px;
@@ -296,112 +310,115 @@ const ManageTasks = () => {
 
 
   return (
-    <div>
-      <SearchInput
-        type="text"
-        placeholder="搜索任务..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      <FilterContainer>
-        {tags.map(tag => (
-          <FilterButton
-            key={tag}
-            active={selectedTag === tag}
-            onClick={() => setSelectedTag(tag)}
-          >
-            {taskTagMap[tag]}
-          </FilterButton>
-        ))}
-      </FilterContainer>
-      
-      <TaskListContainer>
-        {filteredTasks.length > 0 ? (
-          filteredTasks.map(task => (
-            <Task key={task.task_id} tag={task.task_tag}>
-              <TaskTitle>{task.task_title}</TaskTitle>
+    <>
+      <Background />
+      <div>
+        <SearchInput
+          type="text"
+          placeholder="搜索任务..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <FilterContainer>
+          {tags.map(tag => (
+            <FilterButton
+              key={tag}
+              active={selectedTag === tag}
+              onClick={() => setSelectedTag(tag)}
+            >
+              {taskTagMap[tag]}
+            </FilterButton>
+          ))}
+        </FilterContainer>
+        
+        <TaskListContainer>
+          {filteredTasks.length > 0 ? (
+            filteredTasks.map(task => (
+              <Task key={task.task_id} tag={task.task_tag}>
+                <TaskTitle>{task.task_title}</TaskTitle>
+                <TaskMeta>
+                  <span><strong>任务标签:</strong> {taskTagMap[task.task_tag]}</span>
+                  <span><strong>奖励积分:</strong> {task.reward_points}</span>
+                  <span><strong>任务状态:</strong> {taskStatusMap[task.task_status]}</span>
+                  <p><strong>截止日期:</strong> {new Date(task.deadline).toLocaleString()}</p>
+                </TaskMeta>
+                <TaskButton onClick={() => handleTaskDetails(task)}>查看详情</TaskButton>
+                <TaskButton onClick={() => handleEditClick(task)}>提交评论</TaskButton>
+              </Task>
+            ))
+          ) : (
+            <p>无任务.</p>
+          )}
+        </TaskListContainer>
+
+        {/* Task Details Modal */}
+        {selectedTask && (
+          <ModalBackground onClick={() => setSelectedTask(null)}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <h3>{selectedTask.task_title}</h3>
+              <p>{selectedTask.task_description}</p>
               <TaskMeta>
-                <span><strong>任务标签:</strong> {taskTagMap[task.task_tag]}</span>
-                <span><strong>奖励积分:</strong> {task.reward_points}</span>
-                <span><strong>任务状态:</strong> {taskStatusMap[task.task_status]}</span>
-                <p><strong>截止日期:</strong> {new Date(task.deadline).toLocaleString()}</p>
+                <span><strong>任务标签:</strong> {taskTagMap[selectedTask.task_tag]}</span>
+                <span><strong>奖励积分:</strong> {selectedTask.reward_points}</span>
+                <span><strong>任务状态:</strong> {taskStatusMap[selectedTask.task_status]}</span>
+                <span><strong>截止日期:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
+                <span><strong>猎人:</strong> {assigneeNickname || 'nobody'}</span>
+                <p><strong>任务结果:</strong> {selectedTask.task_outcome}</p>
               </TaskMeta>
-              <TaskButton onClick={() => handleTaskDetails(task)}>查看详情</TaskButton>
-              <TaskButton onClick={() => handleEditClick(task)}>提交评论</TaskButton>
-            </Task>
-          ))
-        ) : (
-          <p>无任务.</p>
+              <TaskButton onClick={() => setSelectedTask(null)}>关闭</TaskButton>
+            </ModalContent>
+          </ModalBackground>
         )}
-      </TaskListContainer>
-
-      {/* Task Details Modal */}
-      {selectedTask && (
-        <ModalBackground onClick={() => setSelectedTask(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <h3>{selectedTask.task_title}</h3>
-            <p>{selectedTask.task_description}</p>
-            <TaskMeta>
-              <span><strong>任务标签:</strong> {taskTagMap[selectedTask.task_tag]}</span>
-              <span><strong>奖励积分:</strong> {selectedTask.reward_points}</span>
-              <span><strong>任务状态:</strong> {taskStatusMap[selectedTask.task_status]}</span>
-              <span><strong>截止日期:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
-              <span><strong>猎人:</strong> {assigneeNickname || 'nobody'}</span>
-              <p><strong>任务结果:</strong> {selectedTask.task_outcome}</p>
-            </TaskMeta>
-            <TaskButton onClick={() => setSelectedTask(null)}>关闭</TaskButton>
-          </ModalContent>
-        </ModalBackground>
-      )}
 
 
-       {editTask && (
-        <ModalBackground onClick={() => setEditTask(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <h3>提交任务评价</h3>
-            {submitError && <ErrorMessage>{submitError}</ErrorMessage>}
-            <div>
-              <InputLabel>评分:</InputLabel>
+        {editTask && (
+          <ModalBackground onClick={() => setEditTask(null)}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <h3>提交任务评价</h3>
+              {submitError && <ErrorMessage>{submitError}</ErrorMessage>}
+              <div>
+                <InputLabel>评分:</InputLabel>
+                <EditTaskInput
+                  type="number"
+                  min="1"
+                  max="5"
+                  value={editTaskData.rating}
+                  onChange={(e) => setEditTaskData({ ...editTaskData, rating: e.target.value })}
+                  placeholder="输入评分 (1-5)"
+                />
+              </div>
+              <div>
+                <InputLabel>评论:</InputLabel>
+                <EditTaskTextarea
+                  value={editTaskData.comment}
+                  onChange={(e) => setEditTaskData({ ...editTaskData, comment: e.target.value })}
+                  placeholder="输入评论"
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <TaskButton onClick={handleEditSubmit}>提交</TaskButton>
+                <TaskButton onClick={() => setEditTask(null)}>取消</TaskButton>
+              </div>
+            </ModalContent>
+          </ModalBackground>
+        )}
+
+        {/* {editTask && (
+          <ModalBackground onClick={() => setEditTask(null)}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <h3>提交任务评价</h3>
               <EditTaskInput
-                type="number"
-                min="1"
-                max="5"
-                value={editTaskData.rating}
-                onChange={(e) => setEditTaskData({ ...editTaskData, rating: e.target.value })}
-                placeholder="输入评分 (1-5)"
-              />
-            </div>
-            <div>
-              <InputLabel>评论:</InputLabel>
-              <EditTaskTextarea
                 value={editTaskData.comment}
                 onChange={(e) => setEditTaskData({ ...editTaskData, comment: e.target.value })}
                 placeholder="输入评论"
               />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <TaskButton onClick={handleEditSubmit}>提交</TaskButton>
               <TaskButton onClick={() => setEditTask(null)}>取消</TaskButton>
-            </div>
-          </ModalContent>
-        </ModalBackground>
-      )}
-
-      {/* {editTask && (
-        <ModalBackground onClick={() => setEditTask(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <h3>提交任务评价</h3>
-            <EditTaskInput
-              value={editTaskData.comment}
-              onChange={(e) => setEditTaskData({ ...editTaskData, comment: e.target.value })}
-              placeholder="输入评论"
-            />
-            <TaskButton onClick={handleEditSubmit}>提交</TaskButton>
-            <TaskButton onClick={() => setEditTask(null)}>取消</TaskButton>
-          </ModalContent>
-        </ModalBackground>
-      )} */}
-    </div>
+            </ModalContent>
+          </ModalBackground>
+        )} */}
+      </div>
+    </>
   );
 };
 
