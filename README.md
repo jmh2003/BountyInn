@@ -34,7 +34,7 @@ Bounty Inn is a Django-based platform for task trading and community interaction
 ### 1. Clone the Project
 
 ```bash
-git clone https://github.com/jmh2003/NIS3368.git
+git clone https://github.com/jmh2003/BountyInn.git
 cd backend
 ```
 
