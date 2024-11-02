@@ -192,8 +192,25 @@ const ManageTasks = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [submitError, setSubmitError] = useState(null);
   const [fetchError, setFetchError] = useState(null);
+  const [assigneeNickname, setAssigneeNickname] = useState('');
 
-    useEffect(() => {
+  const fetchAssigneeNickname = async (assigneeId) => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/find_user/`, { user_id: assigneeId });
+      return response.data.nickname;
+    } catch (error) {
+      console.error('获取assignee昵称时出错:', error);
+      return '未知猎人'; // 如果请求失败，返回一个默认名称
+    }
+  };  
+
+  const handleTaskDetails = async (task) => {
+    setSelectedTask(task);
+    const nickname = await fetchAssigneeNickname(task.assignee_id);
+    setAssigneeNickname(nickname);
+  };
+
+  useEffect(() => {
     const fetchTasks = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/tasks_for_review/?username=${username}`);
@@ -309,7 +326,7 @@ const ManageTasks = () => {
                 <span><strong>任务状态:</strong> {taskStatusMap[task.task_status]}</span>
                 <p><strong>截止日期:</strong> {new Date(task.deadline).toLocaleString()}</p>
               </TaskMeta>
-              <TaskButton onClick={() => setSelectedTask(task)}>查看详情</TaskButton>
+              <TaskButton onClick={() => handleTaskDetails(task)}>查看详情</TaskButton>
               <TaskButton onClick={() => handleEditClick(task)}>提交评论</TaskButton>
             </Task>
           ))
@@ -329,7 +346,8 @@ const ManageTasks = () => {
               <span><strong>奖励积分:</strong> {selectedTask.reward_points}</span>
               <span><strong>任务状态:</strong> {taskStatusMap[selectedTask.task_status]}</span>
               <span><strong>截止日期:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
-              <p><strong>候选猎人:</strong> {selectedTask.candidates && selectedTask.candidates.length > 0 ? selectedTask.candidates.join(', ') : 'nobody'}</p>
+              <span><strong>猎人:</strong> {assigneeNickname || 'nobody'}</span>
+              <p><strong>任务结果:</strong> {selectedTask.task_outcome}</p>
             </TaskMeta>
             <TaskButton onClick={() => setSelectedTask(null)}>关闭</TaskButton>
           </ModalContent>

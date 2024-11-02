@@ -61,17 +61,22 @@ const TaskMeta = styled.div`
 `;
 
 const TaskButton = styled.button`
-  margin-top: 10px;
-  padding: 10px 15px;
+  padding: 8px 12px;
   font-size: 14px;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  flex: 1; /* 让按钮在容器中均匀分布 */
 
   &:hover {
     background-color: #0056b3;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
   }
 `;
 
@@ -161,7 +166,7 @@ const EditTaskTextarea = styled.textarea`
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: 50px;
   margin-top: 10px;
 `;
 
@@ -197,12 +202,13 @@ const CandidateList = styled.ul`
 
 // Update CandidateItem to improve visual appearance on selection
 const CandidateItem = styled.li`
+  display: flex;
+  align-items: center;
   padding: 12px;
-  cursor: pointer;
   border: 1px solid #ddd;
   border-radius: 5px;
   margin-bottom: 8px;
-  text-align: center;
+  text-align: left;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
@@ -214,6 +220,14 @@ const CandidateItem = styled.li`
     background-color: #e0f7fa;
     border-color: #007bff;
     font-weight: bold;
+  }
+
+  label {
+    flex: 1;
+  }
+
+  input[type="radio"] {
+    margin-right: 10px;
   }
 `;
 
@@ -260,8 +274,45 @@ const ManageTasks = () => {
   const [confirmDeleteTask, setConfirmDeleteTask] = useState(null); // 确认删除任务的状态
   const [selectedCandidates, setSelectedCandidates] = useState([]); // 选中的候选人
   const [showCandidateModal, setShowCandidateModal] = useState(false); // 显示候选人弹窗
-  
+  const [isConfirmDisabled, setConfirmDisabled] = useState(true);
+  const [selectedCandidate, setSelectedCandidate] = useState(null); // Store selected candidate
+  const [isLocked, setIsLocked] = useState(false); // New state to lock selection
+  const [showHunterInfo, setShowHunterInfo] = useState(false); // 控制猎人信息模态框的显示
+  const [hunterInfo, setHunterInfo] = useState(null); // 存储猎人信息
 
+
+  const handleRadioChange = (task_id, candidate) => {
+    if (!isLocked) { // Prevent changes if selection is locked
+      setSelectedCandidate({ task_id, candidate });
+      setConfirmDisabled(false); // Enable confirm button when a candidate is selected
+    }
+  };
+
+  const handleConfirmSelection = async () => {
+    if (selectedCandidate) {
+      await handleCandidateSelect(selectedCandidate.task_id, selectedCandidate.candidate);
+      setConfirmDisabled(true); // Disable button after confirmation
+      setIsLocked(true);
+    }
+  };
+
+  const handleHunterInfo = async (username) => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/get_user_info/`, {
+        username: username
+      });
+      if (response.data.user) {
+        setHunterInfo(response.data.user); // 将获取到的猎人信息存储
+        setShowHunterInfo(true); // 显示猎人信息模态框
+      } else {
+        alert('用户信息不存在');
+      }
+    } catch (error) {
+      console.error('Error fetching hunter info:', error);
+      alert('无法获取用户信息');
+    }
+  };
+  
   const handleCandidateClick = (task) => {
     const candidatesWithTaskId = task.candidates.map(candidate => ({
       name: candidate,
@@ -501,20 +552,59 @@ const ManageTasks = () => {
             <PromptText>请选择猎人:</PromptText>
             <CandidateList>
               {selectedCandidates.length > 0 ? (
-                selectedCandidates.map(({ name, task_id, isSelected }) => (
+                selectedCandidates.map(({ name, task_id }) => (
                   <CandidateItem
                     key={name}
-                    className={isSelected ? "selected" : ""}
-                    onClick={() => handleCandidateSelect(task_id, name)}
+                    className={selectedCandidate?.candidate === name ? "selected" : ""}
                   >
-                    {name}
+                    <input
+                      type="radio"
+                      name="candidate"
+                      checked={selectedCandidate?.candidate === name}
+                      onChange={() => handleRadioChange(task_id, name)}
+                      disabled={isLocked}
+                    />
+                    <label>{name}</label>
+                    <TaskButton 
+                      onClick={() => handleHunterInfo(name)} 
+                      style={{ marginLeft: '10px' }}
+                    >
+                      猎人信息
+                    </TaskButton>
                   </CandidateItem>
                 ))
               ) : (
                 <p>无猎人可选</p>
               )}
             </CandidateList>
-            <TaskButton onClick={() => setShowCandidateModal(false)}>关闭</TaskButton>
+            <ButtonContainer>
+              <TaskButton 
+                onClick={handleConfirmSelection} 
+                disabled={isConfirmDisabled} 
+                style={{ backgroundColor: isConfirmDisabled ? '#ccc' : '#007bff' }}
+              >
+                确认
+              </TaskButton>
+              <TaskButton onClick={() => setShowCandidateModal(false)}>
+                关闭
+              </TaskButton>
+            </ButtonContainer>
+          </ModalContent>
+        </ModalBackground>
+      )}
+
+      {/* 猎人信息模态框 */}
+      {showHunterInfo && hunterInfo && (
+        <ModalBackground onClick={() => setShowHunterInfo(false)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <h3>猎人信息</h3>
+            <p><strong>昵称:</strong> {hunterInfo.nickname}</p>
+            <p><strong>用户介绍:</strong> {hunterInfo.user_introduction}</p>
+            <p><strong>信誉值:</strong> {hunterInfo.credit_score}</p>
+            <p><strong>剩余积分:</strong> {hunterInfo.remaining_points}</p>
+            <p><strong>能力值:</strong> {hunterInfo.ability_score}</p>
+            <p><strong>状态:</strong> {hunterInfo.is_alive ? '活跃' : '不活跃'}</p>
+            <TaskButton onClick={() => setShowHunterInfo(false)}>关闭</TaskButton>
           </ModalContent>
         </ModalBackground>
       )}
@@ -555,29 +645,17 @@ const ManageTasks = () => {
               onChange={(e) => setEditTaskData({ ...editTaskData, task_description: e.target.value })}
               placeholder="Task Description"
             />
-            {/* <h4>任务标签</h4>
-            <select id="task_tag" value={taskTag} onChange={(e) => setTaskTag(e.target.value)}>
-                <option value="Learning">学习</option>
-                <option value="Life">生活</option>
-                <option value="Job">工作</option>
-                <option value="Else">其他</option>
-              </select> */}
-
-              <label>任务标签</label>
-            <select id="task_tag" value={editTaskData.task_tag} onChange={(e) => setEditTaskData({ ...editTaskData, task_tag: e.target.value })}>
-                <option value="Learning">学习</option>
-                <option value="Life">生活</option>
-                <option value="Job">工作</option>
-                <option value="Else">其他</option>
-              </select>
-
-
-            {/* <EditTaskInput
-              type="text"
-              value={editTaskData.task_tag}
+            <label>任务标签</label>
+            <select 
+              id="task_tag" 
+              value={editTaskData.task_tag} 
               onChange={(e) => setEditTaskData({ ...editTaskData, task_tag: e.target.value })}
-              placeholder="Task Tag"
-            /> */}
+            >
+              <option value="Learning">学习</option>
+              <option value="Life">生活</option>
+              <option value="Job">工作</option>
+              <option value="Else">其他</option>
+            </select>
             <label>奖励积分</label>
             <EditTaskInput
               type="number"
@@ -591,8 +669,10 @@ const ManageTasks = () => {
               value={editTaskData.deadline}
               onChange={(e) => setEditTaskData({ ...editTaskData, deadline: e.target.value })}
             />
-            <TaskButton onClick={handleEditSubmit}>保存</TaskButton>
-            <TaskButton onClick={() => setEditTask(null)}>取消</TaskButton>
+            <ButtonContainer>
+              <TaskButton onClick={handleEditSubmit}>保存</TaskButton>
+              <TaskButton onClick={() => setEditTask(null)}>取消</TaskButton>
+            </ButtonContainer>
           </ModalContent>
         </ModalBackground>
       )}

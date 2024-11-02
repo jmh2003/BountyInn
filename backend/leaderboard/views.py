@@ -1,5 +1,4 @@
 from django.shortcuts import render
-
 # Create your views here.
 # users/views.py
 from django.shortcuts import render
@@ -113,3 +112,39 @@ def get_user_rank(request):
 
     return Response({"userRank": {"rank": rank, "score": getattr(user, order_field.lstrip('-'))}},
                     status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def get_task_info_by_id(request):
+    """
+    根据任务ID获取任务对应的comment、rating、review_at等信息。
+    """
+    task_id = request.data.get('task_id')
+
+    if not task_id:
+        return Response({
+            'error': '任务ID不能为空'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        score = Score.objects.get(task_id=task_id)
+
+        response_data = {
+            'task_id': task_id,
+            'rating': score.rating,
+            'comment': score.comment,
+            'review_at': score.review_at,
+            'reviewer': score.reviewer_id.nickname,
+            'reviewee': score.reviewee_id.nickname,
+            'is_finished': score.is_finished
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+    except Score.DoesNotExist:
+        return Response({
+            'error': '任务ID不存在'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': f'发生错误：{str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

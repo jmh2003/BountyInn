@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ManageTask.css';
@@ -180,6 +178,7 @@ const ManageTasks = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('All');
   const [selectedTask, setSelectedTask] = useState(null);
+  const [taskReview, setTaskReview] = useState(null); // 新增状态来存储评价信息
   const [editTask, setEditTask] = useState(null);
   const [editTaskData, setEditTaskData] = useState({});
 
@@ -197,6 +196,24 @@ const ManageTasks = () => {
 
     fetchTasks();
   }, [username]);
+
+  // 获取任务评价信息的函数
+  const fetchTaskReview = async (taskId) => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/get_task_score/`, {
+        task_id: taskId,
+      });
+      setTaskReview(response.data); // 将获取到的评价信息存储到状态中
+    } catch (error) {
+      console.error('Error fetching task review:', error);
+    }
+  };
+
+  const handleViewTaskDetails = (task) => {
+    setSelectedTask(task);
+    setTaskReview(null); // 清空之前的评价信息，以防上一个任务的评价信息被短暂显示
+    fetchTaskReview(task.task_id); // 点击查看详情时，调用获取评价信息的函数
+  };
 
   const filteredTasks = tasks.filter(task =>
     (selectedTag === 'All' || task.task_tag.toLowerCase() === selectedTag.toLowerCase()) &&
@@ -269,9 +286,9 @@ const ManageTasks = () => {
                 <span><strong>任务标签:</strong> {taskTagMap[task.task_tag]}</span>
                 <span><strong>奖励积分:</strong> {task.reward_points}</span>
                 <span><strong>任务状态:</strong> {taskStatusMap[task.task_status]}</span>
-                <p><strong>截止日期:</strong> {new Date(task.deadline).toLocaleString()}</p>
+                <span><strong>截止日期:</strong> {new Date(task.deadline).toLocaleString()}</span>
               </TaskMeta>
-              <TaskButton onClick={() => setSelectedTask(task)}>查看详情</TaskButton>
+              <TaskButton onClick={() => handleViewTaskDetails(task)}>查看详情</TaskButton>
               <TaskButton onClick={() => handleEditClick(task)}>提交成果</TaskButton>
             </Task>
           ))
@@ -291,8 +308,20 @@ const ManageTasks = () => {
               <span><strong>奖励积分:</strong> {selectedTask.reward_points}</span>
               <span><strong>任务状态:</strong> {taskStatusMap[selectedTask.task_status]}</span>
               <span><strong>截止日期:</strong> {new Date(selectedTask.deadline).toLocaleString()}</span>
-              <p><strong>候选猎人:</strong> {selectedTask.candidates && selectedTask.candidates.length > 0 ? selectedTask.candidates.join(', ') : 'nobody'}</p>
             </TaskMeta>
+            <p><strong>提交信息：</strong>{selectedTask.task_outcome}</p>
+
+            {/* 用户评价部分 */}
+            {taskReview ? (
+              <div>
+                <h4>用户评价</h4>
+                <p><strong>评分:</strong> {taskReview.rating}</p>
+                <p><strong>评论:</strong> {taskReview.comment}</p>
+                <p><strong>评价时间:</strong> {new Date(taskReview.review_at).toLocaleString()}</p>
+              </div>
+            ) : (
+              <p>无评价信息</p>
+            )}
             <TaskButton onClick={() => setSelectedTask(null)}>关闭</TaskButton>
           </ModalContent>
         </ModalBackground>

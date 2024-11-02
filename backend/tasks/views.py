@@ -113,7 +113,7 @@ def get_review_tasks(request):
                 task_status='finished',
                 ).values(
             'task_id', 'task_tag', 'task_title', 'task_description',
-            'task_status', 'reward_points', 'deadline', 'is_reviewed', 'task_outcome'
+            'task_status', 'reward_points', 'deadline', 'is_reviewed', 'task_outcome', 'assignee_id'
         )
 
 
