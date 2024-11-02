@@ -29,6 +29,17 @@ def add_task(request):
 
             task_tag = data.get("task_tag")
             print(f"Received task_tag: {task_tag}")
+            #这里应该查找，该用户的所有任务，计算出发布的任务的奖励值，进行求和
+            #然后判断是否超过了该用户的剩余点数
+            #如果超过了，返回错误
+            #否则，创建任务
+            tasks=Task.objects.filter(creator_id=creator)
+            sum=0
+            for task in tasks:
+                sum+=task.reward_points
+            if creator.remaining_points < data.get("reward_points")+sum:
+                return JsonResponse({"error": "Insufficient points"}, status=400)
+
 
             if creator.remaining_points < data.get("reward_points"):
                 return JsonResponse({"error": "Insufficient points"}, status=400)

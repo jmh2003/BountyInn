@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 from rest_framework.decorators import api_view
+from forum.models import forum
 
 from .models import User
 
@@ -257,8 +258,14 @@ def update_nickname(request):
         if User.objects.filter(nickname=new_nickname).exists():
             return JsonResponse({"error": "该昵称已被占用，请选择其他昵称"}, status=400)
 
+        comment = forum.objects.filter(comment_nickname=username)
+        for i in comment:
+            i.comment_nickname = new_nickname
+            i.save() # 更新评论者的昵称
+
         user.nickname = new_nickname  # 更新昵称
         user.save()  # 保存用户信息
+
 
         return JsonResponse({"message": "昵称已成功更新"}, status=200)
     except User.DoesNotExist:
