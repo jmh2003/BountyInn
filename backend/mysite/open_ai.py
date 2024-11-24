@@ -31,7 +31,7 @@ def get_result_openai(question, knowledge=None):
             },
             {
                 "role": "user",
-                "content": f"Question: {question}?  Please answer in the same language as question: {question}",
+                "content": f"Question: {question}?  Please answer in the same language as question: {question},if you find offensive or rude language, negative emotions or aggressive language in the question, please just say 'I CAN NOT ANSWER'.",
             },
         ],
         temperature=0.3,  # 控制回答的创造性

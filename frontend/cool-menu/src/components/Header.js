@@ -249,7 +249,7 @@ const Header = () => {
         <FontAwesomeIcon icon={faSignOutAlt} />
       </ExitLink>
       
-      {/* <Draggable>
+       <Draggable>
         <FloatingBall onClick={toggleVisibility}>
         
           AI
@@ -279,7 +279,7 @@ const Header = () => {
             </>
           )}
         </ChatBox>
-      </Draggable> */}
+      </Draggable> 
 
 
     </NavBar>
